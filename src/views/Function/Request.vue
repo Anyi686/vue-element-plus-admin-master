@@ -2,7 +2,7 @@
 import { ContentWrap } from '@/components/ContentWrap'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElDivider } from 'element-plus'
-import { request1, request2, request3, request4, request5, expired } from '@/api/request'
+// import { request1, request2, request3, request4, request5, expired } from '@/api/request'
 import { ref } from 'vue'
 import request from '@/axios'
 
@@ -16,8 +16,8 @@ const getRequest1 = async () => {
   }
   try {
     pending.value.add('/request/1')
-    const res = await request1()
-    console.log('【res】：', res)
+    // const res = await request1()
+    // console.log('【res】：', res)
   } catch (error) {
     console.log('【error】：', error)
   } finally {
@@ -31,8 +31,8 @@ const getRequest2 = async () => {
   }
   try {
     pending.value.add('/request/2')
-    const res = await request2()
-    console.log('【res】：', res)
+    // const res = await request2()
+    // console.log('【res】：', res)
   } catch (error) {
     console.log('【error】：', error)
   } finally {
@@ -46,8 +46,8 @@ const getRequest3 = async () => {
   }
   try {
     pending.value.add('/request/3')
-    const res = await request3()
-    console.log('【res】：', res)
+    // const res = await request3()
+    // console.log('【res】：', res)
   } catch (error) {
     console.log('【error】：', error)
   } finally {
@@ -61,8 +61,8 @@ const getRequest4 = async () => {
   }
   try {
     pending.value.add('/request/4')
-    const res = await request4()
-    console.log('【res】：', res)
+    // const res = await request4()
+    // console.log('【res】：', res)
   } catch (error) {
     console.log('【error】：', error)
   } finally {
@@ -76,8 +76,8 @@ const getRequest5 = async () => {
   }
   try {
     pending.value.add('/request/5')
-    const res = await request5()
-    console.log('【res】：', res)
+    // const res = await request5()
+    // console.log('【res】：', res)
   } catch (error) {
     console.log('【error】：', error)
   } finally {
@@ -153,7 +153,7 @@ const clickRequest5 = () => {
 }
 
 const tokenExpired = () => {
-  expired()
+  // expired()
 }
 </script>
 

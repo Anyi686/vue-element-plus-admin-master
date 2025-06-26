@@ -2,7 +2,6 @@
 import { ContentWrap } from '@/components/ContentWrap'
 import { useI18n } from '@/hooks/web/useI18n'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import { getTableListApi } from '@/api/table'
 import { ref, reactive, unref, onMounted } from 'vue'
 import { ElTag } from 'element-plus'
 import { useTable } from '@/hooks/web/useTable'
@@ -10,14 +9,14 @@ import { BaseButton } from '@/components/Button'
 
 const { tableRegister, tableMethods, tableState } = useTable({
   fetchDataApi: async () => {
-    const { currentPage, pageSize } = tableState
-    const res = await getTableListApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize)
-    })
+    // const { currentPage, pageSize } = tableState
+    // const res = await getTableListApi({
+    //   pageIndex: unref(currentPage),
+    //   pageSize: unref(pageSize)
+    // })
     return {
-      list: res.data.list,
-      total: res.data.total
+      list: [],
+      total: 0
     }
   }
 })

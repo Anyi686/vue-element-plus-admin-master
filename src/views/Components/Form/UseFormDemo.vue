@@ -6,7 +6,6 @@ import { useForm } from '@/hooks/web/useForm'
 import { reactive, unref, ref } from 'vue'
 import { ElInput, FormItemProp, ComponentSize, ElMessage, ElMessageBox } from 'element-plus'
 import { useValidator } from '@/hooks/web/useValidator'
-import { getDictOneApi } from '@/api/common'
 import { BaseButton } from '@/components/Button'
 
 const { required } = useValidator()
@@ -372,19 +371,6 @@ const verifyReset = async () => {
   elFormExpose?.resetFields()
 }
 
-const getDictOne = async () => {
-  const res = await getDictOneApi()
-  if (res) {
-    setSchema([
-      {
-        field: 'field2',
-        path: 'componentProps.options',
-        value: res.data
-      }
-    ])
-  }
-}
-
 const inoutFocus = async () => {
   const inputEl: ComponentRef<typeof ElInput> = await getComponentExpose('field1')
   inputEl?.focus()
@@ -445,10 +431,6 @@ const getData = async () => {
 
     <BaseButton @click="formValidation"> {{ t('formDemo.formValidation') }} </BaseButton>
     <BaseButton @click="verifyReset"> {{ t('formDemo.verifyReset') }} </BaseButton>
-
-    <BaseButton @click="getDictOne">
-      {{ `${t('formDemo.select')} ${t('searchDemo.dynamicOptions')}` }}
-    </BaseButton>
 
     <BaseButton @click="inoutFocus">
       {{ `${t('formDemo.input')} ${t('formDemo.focus')}` }}

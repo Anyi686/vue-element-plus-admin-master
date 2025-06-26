@@ -2,22 +2,21 @@
 import { ContentWrap } from '@/components/ContentWrap'
 import { useI18n } from '@/hooks/web/useI18n'
 import { Table, TableColumn } from '@/components/Table'
-import { getTreeTableListApi } from '@/api/table'
-import { reactive, unref } from 'vue'
+import { reactive } from 'vue'
 import { ElTag } from 'element-plus'
 import { useTable } from '@/hooks/web/useTable'
 import { BaseButton } from '@/components/Button'
 
 const { tableRegister, tableState } = useTable({
   fetchDataApi: async () => {
-    const { currentPage, pageSize } = tableState
-    const res = await getTreeTableListApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize)
-    })
+    // const { currentPage, pageSize } = tableState
+    // const res = await getTreeTableListApi({
+    //   pageIndex: unref(currentPage),
+    //   pageSize: unref(pageSize)
+    // })
     return {
-      list: res.data.list,
-      total: res.data.total
+      list: [],
+      total: 0
     }
   }
 })

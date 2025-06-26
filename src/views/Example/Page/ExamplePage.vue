@@ -4,20 +4,20 @@ import { Search } from '@/components/Search'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElTag } from 'element-plus'
 import { Table } from '@/components/Table'
-import { getTableListApi, delTableListApi } from '@/api/table'
 import { useTable } from '@/hooks/web/useTable'
-import { TableData } from '@/api/table/types'
 import { reactive, ref, unref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useEventBus } from '@/hooks/event/useEventBus'
 import { CrudSchema, useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { BaseButton } from '@/components/Button'
+import { useRouter } from 'vue-router'
+import { useEventBus } from '@/hooks/event/useEventBus'
+
+const { push } = useRouter()
+
+const { t } = useI18n()
 
 defineOptions({
   name: 'ExamplePage'
 })
-
-const { push } = useRouter()
 
 const ids = ref<string[]>([])
 
@@ -29,20 +29,13 @@ const setSearchParams = (params: any) => {
 
 const { tableRegister, tableState, tableMethods } = useTable({
   fetchDataApi: async () => {
-    const { currentPage, pageSize } = tableState
-    const res = await getTableListApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize),
-      ...unref(searchParams)
-    })
     return {
-      list: res.data.list,
-      total: res.data.total
+      list: [],
+      total: 0
     }
   },
   fetchDelApi: async () => {
-    const res = await delTableListApi(unref(ids))
-    return !!res
+    return true
   }
 })
 const { loading, dataList, total, currentPage, pageSize } = tableState
@@ -59,8 +52,6 @@ useEventBus({
     getList()
   }
 })
-
-const { t } = useI18n()
 
 const crudSchemas = reactive<CrudSchema[]>([
   {
@@ -256,18 +247,21 @@ const AddAction = () => {
 
 const delLoading = ref(false)
 
-const delData = async (row: TableData | null) => {
+const delData = async (row: any | null) => {
   const elTableExpose = await getElTableExpose()
-  ids.value = row ? [row.id] : elTableExpose?.getSelectionRows().map((v: TableData) => v.id) || []
+  ids.value = row ? [row.id] : elTableExpose?.getSelectionRows().map((v: any) => v.id) || []
   delLoading.value = true
   await delList(unref(ids).length).finally(() => {
     delLoading.value = false
   })
 }
 
-const action = (row: TableData, type: string) => {
+const action = (row: any, type: string) => {
   push(`/example/example-${type}?id=${row.id}`)
 }
+
+const handleSelect = () => {}
+const handleSelectAll = () => {}
 </script>
 
 <template>
@@ -276,9 +270,7 @@ const action = (row: TableData, type: string) => {
 
     <div class="mb-10px">
       <BaseButton type="primary" @click="AddAction">{{ t('exampleDemo.add') }}</BaseButton>
-      <BaseButton :loading="delLoading" type="danger" @click="delData(null)">
-        {{ t('exampleDemo.del') }}
-      </BaseButton>
+      <BaseButton type="danger" @click="delData(null)">{{ t('exampleDemo.del') }}</BaseButton>
     </div>
 
     <Table
@@ -291,7 +283,8 @@ const action = (row: TableData, type: string) => {
         total: total
       }"
       @register="tableRegister"
+      @select="handleSelect"
+      @select-all="handleSelectAll"
     />
   </ContentWrap>
 </template>
-@/hooks/event/useEventBus

@@ -3,14 +3,13 @@ import { ContentWrap } from '@/components/ContentWrap'
 import { useI18n } from '@/hooks/web/useI18n'
 import { Search } from '@/components/Search'
 import { reactive, ref, unref } from 'vue'
-import { getDictOneApi } from '@/api/common'
 import { FormSchema } from '@/components/Form'
 import { useSearch } from '@/hooks/web/useSearch'
 
 const { t } = useI18n()
 
 const { searchRegister, searchMethods } = useSearch()
-const { setSchema, setProps, setValues, getFormData } = searchMethods
+const { setProps, setValues, getFormData } = searchMethods
 
 const treeSelectData = [
   {
@@ -239,121 +238,42 @@ const changePosition = (position: string) => {
   buttonPosition.value = position
 }
 
-const getDictOne = async () => {
-  const res = await getDictOneApi()
-  if (res) {
-    setSchema([
-      {
-        field: 'field2',
-        path: 'componentProps.options',
-        value: res.data
-      }
-    ])
-  }
-}
-
-const handleSearch = async (data: any) => {
+const search = async () => {
   const formData = await getFormData()
   console.log(formData)
-  console.log(data)
 }
 
-const delRadio = () => {
-  setSchema([
-    {
-      field: 'field3',
-      path: 'remove',
-      value: true
-    }
-  ])
-}
-
-const restoreRadio = () => {
-  setSchema([
-    {
-      field: 'field3',
-      path: 'remove',
-      value: false
-    }
-  ])
-}
-
-const setValue = () => {
-  setValues({
-    field1: 'Joy'
-  })
-}
-
-const searchLoading = ref(false)
-const changeSearchLoading = () => {
-  searchLoading.value = true
-  setTimeout(() => {
-    searchLoading.value = false
-  }, 2000)
-}
-
-const resetLoading = ref(false)
-const changeResetLoading = () => {
-  resetLoading.value = true
-  setTimeout(() => {
-    resetLoading.value = false
-  }, 2000)
+const reset = async () => {
+  setValues({})
 }
 </script>
 
 <template>
-  <ContentWrap
-    :title="`${t('searchDemo.search')} ${t('searchDemo.operate')}`"
-    style="margin-bottom: 20px"
-  >
-    <BaseButton @click="changeGrid(true)">{{ t('searchDemo.grid') }}</BaseButton>
-    <BaseButton @click="changeGrid(false)">
-      {{ t('searchDemo.restore') }} {{ t('searchDemo.grid') }}
-    </BaseButton>
+  <div>
+    <ContentWrap
+      :title="`${t('searchDemo.search')} ${t('searchDemo.operate')}`"
+      style="margin-bottom: 20px"
+    >
+      <BaseButton @click="changeGrid(true)">{{ t('searchDemo.grid') }}</BaseButton>
+      <BaseButton @click="changeGrid(false)">{{ t('searchDemo.nGrid') }}</BaseButton>
+      <BaseButton @click="changeLayout">{{ t('searchDemo.layout') }}</BaseButton>
+      <BaseButton @click="changePosition('left')">{{ t('searchDemo.left') }}</BaseButton>
+      <BaseButton @click="changePosition('center')">{{ t('searchDemo.center') }}</BaseButton>
+      <BaseButton @click="changePosition('right')">{{ t('searchDemo.right') }}</BaseButton>
+    </ContentWrap>
 
-    <BaseButton @click="changeLayout">
-      {{ t('searchDemo.button') }} {{ t('searchDemo.position') }}
-    </BaseButton>
-
-    <BaseButton @click="changePosition('left')">
-      {{ t('searchDemo.bottom') }} {{ t('searchDemo.position') }}-{{ t('searchDemo.left') }}
-    </BaseButton>
-    <BaseButton @click="changePosition('center')">
-      {{ t('searchDemo.bottom') }} {{ t('searchDemo.position') }}-{{ t('searchDemo.center') }}
-    </BaseButton>
-    <BaseButton @click="changePosition('right')">
-      {{ t('searchDemo.bottom') }} {{ t('searchDemo.position') }}-{{ t('searchDemo.right') }}
-    </BaseButton>
-    <BaseButton @click="getDictOne">
-      {{ t('formDemo.select') }} {{ t('searchDemo.dynamicOptions') }}
-    </BaseButton>
-    <BaseButton @click="delRadio">{{ t('searchDemo.deleteRadio') }}</BaseButton>
-    <BaseButton @click="restoreRadio">{{ t('searchDemo.restoreRadio') }}</BaseButton>
-    <BaseButton @click="setValue">{{ t('formDemo.setValue') }}</BaseButton>
-
-    <BaseButton @click="changeSearchLoading">
-      {{ t('searchDemo.search') }} {{ t('searchDemo.loading') }}
-    </BaseButton>
-    <BaseButton @click="changeResetLoading">
-      {{ t('searchDemo.reset') }} {{ t('searchDemo.loading') }}
-    </BaseButton>
-  </ContentWrap>
-
-  <ContentWrap :title="t('searchDemo.search')" :message="t('searchDemo.searchDes')">
-    <Search
-      :schema="schema"
-      :is-col="isGrid"
-      :layout="layout"
-      :button-position="buttonPosition"
-      :search-loading="searchLoading"
-      :reset-loading="resetLoading"
-      show-expand
-      expand-field="field6"
-      @search="handleSearch"
-      @reset="handleSearch"
-      @register="searchRegister"
-    />
-  </ContentWrap>
+    <ContentWrap :title="t('searchDemo.search')" :message="t('searchDemo.searchDes')">
+      <Search
+        :schema="schema"
+        @register="searchRegister"
+        :is-grid="isGrid"
+        :layout="layout"
+        :button-position="buttonPosition"
+        @search="search"
+        @reset="reset"
+      />
+    </ContentWrap>
+  </div>
 </template>
 
 <style lang="less" scoped>

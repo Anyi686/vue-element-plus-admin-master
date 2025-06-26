@@ -4,7 +4,6 @@ import { ContentDetailWrap } from '@/components/ContentDetailWrap'
 import { ref, unref } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useRouter } from 'vue-router'
-import { saveTableApi } from '@/api/table'
 import { useEventBus } from '@/hooks/event/useEventBus'
 
 const { emit } = useEventBus()
@@ -22,15 +21,11 @@ const save = async () => {
   const formData = await write?.submit()
   if (formData) {
     loading.value = true
-    const res = await saveTableApi(formData)
-      .catch(() => {})
-      .finally(() => {
-        loading.value = false
-      })
-    if (res) {
+    setTimeout(() => {
+      loading.value = false
       emit('getList', 'add')
       push('/example/example-page')
-    }
+    }, 1000)
   }
 }
 </script>

@@ -1,11 +1,10 @@
-<script setup lang="tsx">
+<script setup lang="ts">
 import { Form, FormSchema } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
 import { PropType, reactive, watch, ref, unref } from 'vue'
 import { useValidator } from '@/hooks/web/useValidator'
 import { useI18n } from '@/hooks/web/useI18n'
-import { getMenuListApi } from '@/api/menu'
-import { ElButton, ElInput, ElPopconfirm, ElTable, ElTableColumn, ElTag } from 'element-plus'
+import { ElButton, ElInput, ElTable, ElTableColumn, ElTag } from 'element-plus'
 import AddButtonPermission from './AddButtonPermission.vue'
 import { BaseButton } from '@/components/Button'
 import { cloneDeep } from 'lodash-es'
@@ -20,6 +19,9 @@ const props = defineProps({
     default: () => null
   }
 })
+
+const { formRegister, formMethods } = useForm()
+const { setValues, getFormData, setSchema } = formMethods
 
 const handleClose = async (tag: any) => {
   const formData = await getFormData()
@@ -36,7 +38,9 @@ const handleEdit = async (row: any) => {
 
 const handleSave = async () => {
   const formData = await getFormData()
-  const index = formData?.permissionList?.findIndex((x) => x.id === permissionEditingRow.value.id)
+  const index = formData?.permissionList?.findIndex(
+    (x: any) => x.id === permissionEditingRow.value.id
+  )
   if (index !== -1) {
     formData.permissionList[index] = { ...permissionEditingRow.value }
     permissionEditingRow.value = null // 重置编辑状态
@@ -140,8 +144,7 @@ const formSchema = reactive<FormSchema[]>([
       }
     },
     optionApi: async () => {
-      const res = await getMenuListApi()
-      return res.data.list || []
+      return []
     }
   },
   {
@@ -207,81 +210,6 @@ const formSchema = reactive<FormSchema[]>([
     component: 'CheckboxGroup',
     colProps: {
       span: 24
-    },
-    formItemProps: {
-      slots: {
-        default: (data: any) => (
-          <>
-            <BaseButton
-              class="m-t-5px"
-              type="primary"
-              size="small"
-              onClick={() => (showDrawer.value = true)}
-            >
-              添加权限
-            </BaseButton>
-            <ElTable data={data?.permissionList}>
-              <ElTableColumn type="index" prop="id" />
-              <ElTableColumn
-                prop="value"
-                label="Value"
-                v-slots={{
-                  default: ({ row }: any) =>
-                    permissionEditingRow.value && permissionEditingRow.value.id === row.id ? (
-                      <ElInput v-model={permissionEditingRow.value.value} size="small" />
-                    ) : (
-                      <span>{row.value}</span>
-                    )
-                }}
-              />
-              <ElTableColumn
-                prop="label"
-                label="Label"
-                v-slots={{
-                  default: ({ row }: any) =>
-                    permissionEditingRow.value && permissionEditingRow.value.id === row.id ? (
-                      <ElInput v-model={permissionEditingRow.value.label} size="small" />
-                    ) : (
-                      <ElTag class="mr-1" key={row.value}>
-                        {row.label}
-                      </ElTag>
-                    )
-                }}
-              />
-              <ElTableColumn
-                label="Operations"
-                width="180"
-                v-slots={{
-                  default: ({ row }: any) =>
-                    permissionEditingRow.value && permissionEditingRow.value.id === row.id ? (
-                      <ElButton size="small" type="primary" onClick={handleSave}>
-                        确定
-                      </ElButton>
-                    ) : (
-                      <>
-                        <ElButton size="small" type="primary" onClick={() => handleEdit(row)}>
-                          编辑
-                        </ElButton>
-                        <ElPopconfirm
-                          title="Are you sure to delete this?"
-                          onConfirm={() => handleClose(row)}
-                        >
-                          {{
-                            reference: () => (
-                              <ElButton size="small" type="danger">
-                                删除
-                              </ElButton>
-                            )
-                          }}
-                        </ElPopconfirm>
-                      </>
-                    )
-                }}
-              />
-            </ElTable>
-          </>
-        )
-      }
     }
   },
   {
@@ -327,63 +255,16 @@ const rules = reactive({
   'meta.title': [required()]
 })
 
-const { formRegister, formMethods } = useForm()
-const { setValues, getFormData, getElFormExpose, setSchema } = formMethods
-
-const submit = async () => {
-  const elForm = await getElFormExpose()
-  const valid = await elForm?.validate().catch((err) => {
-    console.log(err)
-  })
-  if (valid) {
-    const formData = await getFormData()
-    return formData
-  }
-}
-
 const cacheComponent = ref('')
 
 watch(
   () => props.currentRow,
-  (value) => {
-    if (!value) return
-    const currentRow = cloneDeep(value)
-    cacheComponent.value = currentRow.type === 1 ? currentRow.component : ''
-    if (currentRow.parentId === 0) {
-      setSchema([
-        {
-          field: 'component',
-          path: 'componentProps.disabled',
-          value: true
-        }
-      ])
-    } else {
-      setSchema([
-        {
-          field: 'component',
-          path: 'componentProps.disabled',
-          value: false
-        }
-      ])
-    }
-    if (currentRow.type === 1) {
-      setSchema([
-        {
-          field: 'component',
-          path: 'componentProps.disabled',
-          value: false
-        }
-      ])
-    } else {
-      setSchema([
-        {
-          field: 'component',
-          path: 'componentProps.disabled',
-          value: true
-        }
-      ])
-    }
+  async (currentRow) => {
+    if (!currentRow) return
+    const { setValues } = formMethods
     setValues(currentRow)
+
+    cacheComponent.value = currentRow.component
   },
   {
     deep: true,
@@ -392,18 +273,73 @@ watch(
 )
 
 defineExpose({
-  submit
+  formMethods
 })
 
-const confirm = async (data: any) => {
+const addButtonConfirm = async (data: any) => {
   const formData = await getFormData()
+  const permissionList = cloneDeep(formData.permissionList || [])
+  permissionList.push(data)
   setValues({
-    permissionList: [...(formData?.permissionList || []), data]
+    permissionList
   })
 }
 </script>
 
 <template>
-  <Form :rules="rules" @register="formRegister" :schema="formSchema" />
-  <AddButtonPermission v-model="showDrawer" @confirm="confirm" />
+  <Form
+    :schema="formSchema"
+    @register="formRegister"
+    :rules="rules"
+    label-width="100px"
+    class="dark:(border-1 border-[var(--el-border-color)] border-solid)"
+  >
+    <template #permissionList="data">
+      <BaseButton class="m-t-5px" type="primary" size="small" @click="showDrawer = true">
+        添加权限
+      </BaseButton>
+      <ElTable :data="data?.permissionList">
+        <ElTableColumn type="index" prop="id" />
+        <ElTableColumn prop="value" label="Value">
+          <template #default="{ row }">
+            <ElInput
+              v-if="permissionEditingRow && permissionEditingRow.id === row.id"
+              v-model="permissionEditingRow.value"
+              size="small"
+            />
+            <span v-else>{{ row.value }}</span>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="label" label="Label">
+          <template #default="{ row }">
+            <ElInput
+              v-if="permissionEditingRow && permissionEditingRow.id === row.id"
+              v-model="permissionEditingRow.label"
+              size="small"
+            />
+            <ElTag v-else class="mr-1" :key="row.value">
+              {{ row.label }}
+            </ElTag>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="Operations" width="180">
+          <template #default="{ row }">
+            <ElButton
+              v-if="permissionEditingRow && permissionEditingRow.id === row.id"
+              size="small"
+              type="primary"
+              @click="handleSave"
+            >
+              确定
+            </ElButton>
+            <template v-else>
+              <ElButton size="small" type="primary" @click="handleEdit(row)"> 编辑 </ElButton>
+              <ElButton size="small" type="primary" @click="handleClose(row)"> 删除 </ElButton>
+            </template>
+          </template>
+        </ElTableColumn>
+      </ElTable>
+    </template>
+  </Form>
+  <AddButtonPermission v-model="showDrawer" @confirm="addButtonConfirm" />
 </template>

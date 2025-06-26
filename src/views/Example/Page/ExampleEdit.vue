@@ -3,26 +3,22 @@ import Write from './components/Write.vue'
 import { ContentDetailWrap } from '@/components/ContentDetailWrap'
 import { ref, unref } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
-import { useRouter, useRoute } from 'vue-router'
-import { saveTableApi, getTableDetApi } from '@/api/table'
-import { TableData } from '@/api/table/types'
+import { useRouter } from 'vue-router'
 import { useEventBus } from '@/hooks/event/useEventBus'
 
 const { emit } = useEventBus()
 
 const { push, go } = useRouter()
 
-const { query } = useRoute()
-
 const { t } = useI18n()
 
-const currentRow = ref<Nullable<TableData>>(null)
+const currentRow = ref<any>(null)
 
 const getTableDet = async () => {
-  const res = await getTableDetApi(query.id as string)
-  if (res) {
-    currentRow.value = res.data
-  }
+  // const res = await getTableDetApi(query.id as string)
+  // if (res) {
+  //   currentRow.value = res.data
+  // }
 }
 
 getTableDet()
@@ -36,15 +32,20 @@ const save = async () => {
   const formData = await write?.submit()
   if (formData) {
     loading.value = true
-    const res = await saveTableApi(formData)
-      .catch(() => {})
-      .finally(() => {
-        loading.value = false
-      })
-    if (res) {
+    // const res = await saveTableApi(formData)
+    //   .catch(() => {})
+    //   .finally(() => {
+    //     loading.value = false
+    //   })
+    // if (res) {
+    //   emit('getList', 'editor')
+    //   push('/example/example-page')
+    // }
+    setTimeout(() => {
+      loading.value = false
       emit('getList', 'editor')
       push('/example/example-page')
-    }
+    }, 1000)
   }
 }
 </script>
@@ -63,4 +64,3 @@ const save = async () => {
     </template>
   </ContentDetailWrap>
 </template>
-@/hooks/event/useEventBus

@@ -1,111 +1,22 @@
 <script setup lang="ts">
-import { useTimeAgo } from '@/hooks/web/useTimeAgo'
 import { ElRow, ElCol, ElSkeleton, ElCard, ElDivider, ElLink } from 'element-plus'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ref, reactive } from 'vue'
 import { CountTo } from '@/components/CountTo'
-import { formatTime } from '@/utils'
-import { Echart } from '@/components/Echart'
-import { EChartsOption } from 'echarts'
-import { radarOption } from './echarts-data'
-import { Highlight } from '@/components/Highlight'
-import {
-  getCountApi,
-  getProjectApi,
-  getDynamicApi,
-  getTeamApi,
-  getRadarApi
-} from '@/api/dashboard/workplace'
-import type { WorkplaceTotal, Project, Dynamic, Team } from '@/api/dashboard/workplace/types'
-import { set } from 'lodash-es'
 
-const loading = ref(true)
+const loading = ref(false)
 
 // 获取统计数
-let totalSate = reactive<WorkplaceTotal>({
+const totalSate = reactive<any>({
   project: 0,
   access: 0,
   todo: 0
 })
 
-const getCount = async () => {
-  const res = await getCountApi().catch(() => {})
-  if (res) {
-    totalSate = Object.assign(totalSate, res.data)
-  }
-}
-
-let projects = reactive<Project[]>([])
-
-// 获取项目数
-const getProject = async () => {
-  const res = await getProjectApi().catch(() => {})
-  if (res) {
-    projects = Object.assign(projects, res.data)
-  }
-}
+const projects = reactive<any[]>([])
 
 // 获取动态
-let dynamics = reactive<Dynamic[]>([])
-
-const getDynamic = async () => {
-  const res = await getDynamicApi().catch(() => {})
-  if (res) {
-    dynamics = Object.assign(dynamics, res.data)
-  }
-}
-
-// 获取团队
-let team = reactive<Team[]>([])
-
-const getTeam = async () => {
-  const res = await getTeamApi().catch(() => {})
-  if (res) {
-    team = Object.assign(team, res.data)
-  }
-}
-
-// 获取指数
-const radarOptionData = reactive<EChartsOption>(radarOption) as EChartsOption
-
-const getRadar = async () => {
-  const res = await getRadarApi().catch(() => {})
-  if (res) {
-    set(
-      radarOptionData,
-      'radar.indicator',
-      res.data.map((v) => {
-        return {
-          name: t(v.name),
-          max: v.max
-        }
-      })
-    )
-    set(radarOptionData, 'series', [
-      {
-        name: `xxx${t('workplace.index')}`,
-        type: 'radar',
-        data: [
-          {
-            value: res.data.map((v) => v.personal),
-            name: t('workplace.personal')
-          },
-          {
-            value: res.data.map((v) => v.team),
-            name: t('workplace.team')
-          }
-        ]
-      }
-    ])
-  }
-}
-
-const getAllApi = async () => {
-  await Promise.all([getCount(), getProject(), getDynamic(), getTeam(), getRadar()])
-  loading.value = false
-}
-
-getAllApi()
+const dynamics = reactive<any[]>([])
 
 const { t } = useI18n()
 </script>
@@ -192,13 +103,12 @@ const { t } = useI18n()
             >
               <ElCard shadow="hover">
                 <div class="flex items-center">
-                  <Icon :icon="item.icon" :size="25" class="mr-10px" />
                   <span class="text-16px">{{ item.name }}</span>
                 </div>
                 <div class="mt-15px text-14px text-gray-400">{{ t(item.message) }}</div>
                 <div class="mt-20px text-12px text-gray-400 flex justify-between">
                   <span>{{ item.personal }}</span>
-                  <span>{{ formatTime(item.time, 'yyyy-MM-dd') }}</span>
+                  <span>{{ item.time }}</span>
                 </div>
               </ElCard>
             </ElCol>
@@ -223,12 +133,10 @@ const { t } = useI18n()
               />
               <div>
                 <div class="text-14px">
-                  <Highlight :keys="item.keys.map((v) => t(v))">
-                    {{ t('workplace.pushCode') }}
-                  </Highlight>
+                  {{ t('workplace.pushCode') }}
                 </div>
                 <div class="mt-15px text-12px text-gray-400">
-                  {{ useTimeAgo(item.time) }}
+                  {{ item.time }}
                 </div>
               </div>
             </div>
@@ -258,36 +166,9 @@ const { t } = useI18n()
                 {{ t('workplace.operation') }}{{ item }}
               </ElLink>
             </ElCol>
-          </ElRow>
-        </ElSkeleton>
-      </ElCard>
-
-      <ElCard shadow="never" class="mt-20px">
-        <template #header>
-          <span>xx{{ t('workplace.index') }}</span>
-        </template>
-        <ElSkeleton :loading="loading" animated>
-          <Echart :options="radarOptionData" :height="400" />
-        </ElSkeleton>
-      </ElCard>
-
-      <ElCard shadow="never" class="mt-20px">
-        <template #header>
-          <span>{{ t('workplace.team') }}</span>
-        </template>
-        <ElSkeleton :loading="loading" animated>
-          <ElRow>
-            <ElCol v-for="item in team" :key="`team-${item.name}`" :span="12" class="mb-20px">
-              <div class="flex items-center">
-                <Icon :icon="item.icon" class="mr-10px" />
-                <ElLink type="default" :underline="false">
-                  {{ item.name }}
-                </ElLink>
-              </div>
-            </ElCol>
-          </ElRow>
-        </ElSkeleton>
-      </ElCard>
-    </ElCol>
-  </ElRow>
+          </ElRow></ElSkeleton
+        ></ElCard
+      ></ElCol
+    ></ElRow
+  >
 </template>

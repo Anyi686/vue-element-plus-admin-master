@@ -5,9 +5,7 @@ import { Dialog } from '@/components/Dialog'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElTag } from 'element-plus'
 import { Table } from '@/components/Table'
-import { getTableListApi, saveTableApi, delTableListApi } from '@/api/table'
 import { useTable } from '@/hooks/web/useTable'
-import { TableData } from '@/api/table/types'
 import { ref, unref, reactive } from 'vue'
 import Write from './components/Write.vue'
 import Detail from './components/Detail.vue'
@@ -18,20 +16,13 @@ const ids = ref<string[]>([])
 
 const { tableRegister, tableState, tableMethods } = useTable({
   fetchDataApi: async () => {
-    const { currentPage, pageSize } = tableState
-    const res = await getTableListApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize),
-      ...unref(searchParams)
-    })
     return {
-      list: res.data.list,
-      total: res.data.total
+      list: [],
+      total: 0
     }
   },
   fetchDelApi: async () => {
-    const res = await delTableListApi(unref(ids))
-    return !!res
+    return true
   }
 })
 const { loading, dataList, total, currentPage, pageSize } = tableState
@@ -236,7 +227,7 @@ const { allSchemas } = useCrudSchemas(crudSchemas)
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 
-const currentRow = ref<TableData | null>(null)
+const currentRow = ref<any | null>(null)
 const actionType = ref('')
 
 const AddAction = () => {
@@ -248,16 +239,16 @@ const AddAction = () => {
 
 const delLoading = ref(false)
 
-const delData = async (row: TableData | null) => {
+const delData = async (row: any | null) => {
   const elTableExpose = await getElTableExpose()
-  ids.value = row ? [row.id] : elTableExpose?.getSelectionRows().map((v: TableData) => v.id) || []
+  ids.value = row ? [row.id] : elTableExpose?.getSelectionRows().map((v: any) => v.id) || []
   delLoading.value = true
   await delList(unref(ids).length).finally(() => {
     delLoading.value = false
   })
 }
 
-const action = (row: TableData, type: string) => {
+const action = (row: any, type: string) => {
   dialogTitle.value = t(type === 'edit' ? 'exampleDemo.edit' : 'exampleDemo.detail')
   actionType.value = type
   currentRow.value = row
@@ -273,16 +264,11 @@ const save = async () => {
   const formData = await write?.submit()
   if (formData) {
     saveLoading.value = true
-    const res = await saveTableApi(formData)
-      .catch(() => {})
-      .finally(() => {
-        saveLoading.value = false
-      })
-    if (res) {
+    setTimeout(() => {
+      saveLoading.value = false
       dialogVisible.value = false
-      currentPage.value = 1
       getList()
-    }
+    }, 1000)
   }
 }
 </script>
@@ -309,32 +295,22 @@ const save = async () => {
       }"
       @register="tableRegister"
     />
+
+    <Dialog v-model="dialogVisible" :title="dialogTitle">
+      <Write v-if="actionType !== 'detail'" ref="writeRef" :current-row="currentRow" />
+      <Detail v-if="actionType === 'detail'" :current-row="currentRow" />
+
+      <template #footer>
+        <BaseButton
+          v-if="actionType !== 'detail'"
+          type="primary"
+          :loading="saveLoading"
+          @click="save"
+        >
+          {{ t('exampleDemo.save') }}
+        </BaseButton>
+        <BaseButton @click="dialogVisible = false">{{ t('dialogDemo.close') }}</BaseButton>
+      </template>
+    </Dialog>
   </ContentWrap>
-
-  <Dialog v-model="dialogVisible" :title="dialogTitle">
-    <Write
-      v-if="actionType !== 'detail'"
-      ref="writeRef"
-      :form-schema="allSchemas.formSchema"
-      :current-row="currentRow"
-    />
-
-    <Detail
-      v-if="actionType === 'detail'"
-      :detail-schema="allSchemas.detailSchema"
-      :current-row="currentRow"
-    />
-
-    <template #footer>
-      <BaseButton
-        v-if="actionType !== 'detail'"
-        type="primary"
-        :loading="saveLoading"
-        @click="save"
-      >
-        {{ t('exampleDemo.save') }}
-      </BaseButton>
-      <BaseButton @click="dialogVisible = false">{{ t('dialogDemo.close') }}</BaseButton>
-    </template>
-  </Dialog>
 </template>
