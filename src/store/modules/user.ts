@@ -3,9 +3,10 @@ import { store } from '../index'
 import { UserLoginType, UserType } from '@/api/login/types'
 import { ElMessageBox } from 'element-plus'
 import { useI18n } from '@/hooks/web/useI18n'
-import { loginOutApi } from '@/api/login'
+import { loginApi } from '@/api/login'
 import { useTagsViewStore } from './tagsView'
 import router from '@/router'
+import md5 from 'crypto-js/md5'
 
 interface UserState {
   userInfo?: UserType
@@ -49,6 +50,29 @@ export const useUserStore = defineStore('user', {
     }
   },
   actions: {
+    async login(loginData: UserLoginType) {
+      const { password, ...restData } = loginData
+      const res = await loginApi({
+        ...restData,
+        password: md5(password).toString()
+      })
+      if (res) {
+        // 处理后端返回的数据
+        console.log('Login response:', res) // 添加日志，查看返回数据结构
+        const realData = (res as any).data || res
+        const token = realData.token || ''
+
+        if (token) {
+          this.setToken(token)
+          this.setUserInfo(realData)
+          return realData
+        } else {
+          console.error('Login successful but no token returned')
+          return null
+        }
+      }
+      return null
+    },
     setTokenKey(tokenKey: string) {
       this.tokenKey = tokenKey
     },
@@ -68,11 +92,8 @@ export const useUserStore = defineStore('user', {
         cancelButtonText: t('common.cancel'),
         type: 'warning'
       })
-        .then(async () => {
-          const res = await loginOutApi().catch(() => {})
-          if (res) {
-            this.reset()
-          }
+        .then(() => {
+          this.reset()
         })
         .catch(() => {})
     },

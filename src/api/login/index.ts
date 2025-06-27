@@ -6,11 +6,7 @@ interface RoleParams {
 }
 
 export const loginApi = (data: UserType): Promise<IResponse<UserType>> => {
-  return request.post({ url: '/mock/user/login', data })
-}
-
-export const loginOutApi = (): Promise<IResponse> => {
-  return request.get({ url: '/mock/user/loginOut' })
+  return request.post({ url: '/admin/login/login', data })
 }
 
 export const getUserListApi = ({ params }: AxiosConfig) => {
@@ -20,15 +16,5 @@ export const getUserListApi = ({ params }: AxiosConfig) => {
       list: UserType[]
       total: number
     }
-  }>({ url: '/mock/user/list', params })
-}
-
-export const getAdminRoleApi = (
-  params: RoleParams
-): Promise<IResponse<AppCustomRouteRecordRaw[]>> => {
-  return request.get({ url: '/mock/role/list', params })
-}
-
-export const getTestRoleApi = (params: RoleParams): Promise<IResponse<string[]>> => {
-  return request.get({ url: '/mock/role/list2', params })
+  }>({ url: '/admin/user/list', params })
 }

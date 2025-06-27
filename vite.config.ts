@@ -76,7 +76,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
         svgoOptions: true
       }),
       PurgeIcons(),
-      env.VITE_USE_MOCK === 'true'
+      false
         ? viteMockServe({
             ignore: /^\_/,
             mockPath: 'mock',
@@ -145,9 +145,13 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       proxy: {
         // 选项写法
         '/api': {
-          target: 'http://127.0.0.1:8000',
+          target: 'http://47.105.125.5:81',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, '')
+        },
+        '/admin': {
+          target: 'http://your-backend-server-url',
+          changeOrigin: true
         }
       },
       hmr: {
