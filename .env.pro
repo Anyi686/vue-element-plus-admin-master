@@ -1,8 +1,5 @@
-# 环境
+# 用于构建生产版本
 VITE_NODE_ENV=production
-
-# 接口前缀
-VITE_API_BASE_PATH=
 
 # 打包路径
 VITE_BASE_PATH=/
@@ -22,6 +19,13 @@ VITE_OUT_DIR=dist-pro
 # 标题
 VITE_APP_TITLE=领克AI总后台
 
+# websocket地址
+VITE_WEBSOCKET_URL='ws://47.104.145.215:13088'
+# api地址
+VITE_API_BASE_PATH='http://47.104.145.215:13086'
+# 文件上传的地址
+VITE_UPLOAD_URL='http://47.104.145.215:14086/fileUpload'
+
 # 是否包分析
 VITE_USE_BUNDLE_ANALYZER=true
 
@@ -29,7 +33,7 @@ VITE_USE_BUNDLE_ANALYZER=true
 VITE_USE_ALL_ELEMENT_PLUS_STYLE=false
 
 # 是否开启mock
-VITE_USE_MOCK=true
+VITE_USE_MOCK=false
 
 # 是否切割css
 VITE_USE_CSS_SPLIT=true
