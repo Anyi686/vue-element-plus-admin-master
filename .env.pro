@@ -26,7 +26,7 @@ VITE_SOURCEMAP=false
 VITE_OUT_DIR=dist-pro
 
 # 标题
-VITE_APP_TITLE=领克AI总后台
+VITE_APP_TITLE=AI后台管理系统
 
 # 是否包分析
 VITE_USE_BUNDLE_ANALYZER=true

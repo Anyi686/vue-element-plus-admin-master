@@ -3,10 +3,9 @@ import { store } from '../index'
 import { UserLoginType, UserType } from '@/api/login/types'
 import { ElMessageBox } from 'element-plus'
 import { useI18n } from '@/hooks/web/useI18n'
-import { loginApi } from '@/api/login'
+
 import { useTagsViewStore } from './tagsView'
 import router from '@/router'
-import md5 from 'crypto-js/md5'
 
 interface UserState {
   userInfo?: UserType
@@ -51,27 +50,30 @@ export const useUserStore = defineStore('user', {
   },
   actions: {
     async login(loginData: UserLoginType) {
-      const { password, ...restData } = loginData
-      const res = await loginApi({
-        ...restData,
-        password: md5(password).toString()
-      })
-      if (res) {
-        // 处理后端返回的数据
-        console.log('Login response:', res) // 添加日志，查看返回数据结构
-        const realData = (res as any).data || res
-        const token = realData.token || ''
+      const { account, password } = loginData
 
-        if (token) {
-          this.setToken(token)
-          this.setUserInfo(realData)
-          return realData
-        } else {
-          console.error('Login successful but no token returned')
-          return null
+      // 使用固定账号密码验证
+      if (account === 'admin' && password === '123456') {
+        // 模拟登录成功，创建用户信息
+        const mockUserData = {
+          account: 'admin',
+          password: '123456',
+          username: '管理员',
+          token: 'mock-token-' + Date.now(),
+          role: 'admin',
+          roleId: '1',
+          permissions: ['*:*:*'] // 给予所有权限
         }
+
+        console.log('Login successful with fixed credentials')
+        this.setToken(mockUserData.token)
+        this.setUserInfo(mockUserData)
+        return mockUserData
+      } else {
+        // 账号密码错误
+        console.error('Invalid credentials. Use admin/123456')
+        throw new Error('用户名或密码错误，请使用 admin/123456')
       }
-      return null
     },
     setTokenKey(tokenKey: string) {
       this.tokenKey = tokenKey

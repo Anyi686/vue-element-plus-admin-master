@@ -36,7 +36,12 @@ const schema = reactive<FormSchema[]>([
     formItemProps: {
       slots: {
         default: () => {
-          return <h2 class="text-2xl font-bold text-center w-[100%]">{t('login.login')}</h2>
+          return (
+            <div class="text-center w-[100%]">
+              <h2 class="text-2xl font-bold">{t('login.login')}</h2>
+              <p class="text-sm text-gray-500 mt-2">默认账号：admin，密码：123456</p>
+            </div>
+          )
         }
       }
     }
@@ -50,7 +55,8 @@ const schema = reactive<FormSchema[]>([
     },
     componentProps: {
       placeholder: '请输入用户名'
-    }
+    },
+    value: 'admin'
   },
   {
     field: 'password',
@@ -73,7 +79,8 @@ const schema = reactive<FormSchema[]>([
           signIn()
         }
       }
-    }
+    },
+    value: '123456'
   },
   {
     field: 'tool',
@@ -230,6 +237,10 @@ const signIn = async () => {
             replace: true
           })
         }, 100)
+      } catch (error) {
+        // 处理登录错误
+        console.error('Login error:', error)
+        ElMessage.error((error as Error).message || '登录失败')
       } finally {
         loading.value = false
       }
