@@ -1,9 +1,9 @@
 import request from '@/axios'
 import type { UserType } from './types'
 
-interface RoleParams {
-  roleName: string
-}
+// interface RoleParams {
+//   roleName: string
+// }
 
 export const loginApi = (data: UserType): Promise<IResponse<UserType>> => {
   return request.post({ url: '/admin/login/login', data })

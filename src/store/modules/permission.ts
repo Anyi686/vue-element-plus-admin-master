@@ -1,33 +1,37 @@
 import { defineStore } from 'pinia'
 import { store } from '../index'
 import { asyncRouterMap, constantRouterMap } from '@/router'
-import { AppCustomRouteRecordRaw } from '@/router/types'
 
 interface PermissionState {
-  routers: AppCustomRouteRecordRaw[]
-  addRouters: AppCustomRouteRecordRaw[]
+  routers: AppRouteRecordRaw[]
+  addRouters: AppRouteRecordRaw[]
   isAddRouters: boolean
+  menuTabRouters: AppRouteRecordRaw[]
 }
 
 export const usePermissionStore = defineStore('permission', {
   state: (): PermissionState => ({
     routers: [],
     addRouters: [],
-    isAddRouters: false
+    isAddRouters: false,
+    menuTabRouters: []
   }),
   getters: {
-    getRouters(): AppCustomRouteRecordRaw[] {
+    getRouters(): AppRouteRecordRaw[] {
       return this.routers
     },
-    getAddRouters(): AppCustomRouteRecordRaw[] {
+    getAddRouters(): AppRouteRecordRaw[] {
       return this.addRouters
     },
     getIsAddRouters(): boolean {
       return this.isAddRouters
+    },
+    getMenuTabRouters(): AppRouteRecordRaw[] {
+      return this.menuTabRouters
     }
   },
   actions: {
-    generateRoutes(type?: string): Promise<AppCustomRouteRecordRaw[]> {
+    generateRoutes(type?: string): Promise<AppRouteRecordRaw[]> {
       return new Promise((resolve) => {
         console.log('Generating routes with type:', type)
         const accessedRouters = asyncRouterMap
@@ -37,14 +41,17 @@ export const usePermissionStore = defineStore('permission', {
         resolve(accessedRouters)
       })
     },
-    setRouters(routers: AppCustomRouteRecordRaw[]) {
+    setRouters(routers: AppRouteRecordRaw[]) {
       this.routers = routers
     },
-    setAddRouters(routers: AppCustomRouteRecordRaw[]) {
+    setAddRouters(routers: AppRouteRecordRaw[]) {
       this.addRouters = routers
     },
     setIsAddRouters(isAddRouters: boolean) {
       this.isAddRouters = isAddRouters
+    },
+    setMenuTabRouters(routers: AppRouteRecordRaw[]) {
+      this.menuTabRouters = routers
     }
   }
 })

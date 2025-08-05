@@ -18,7 +18,7 @@ const emit = defineEmits(['to-register'])
 
 const userStore = useUserStore()
 
-const { currentRoute, addRoute, push } = useRouter()
+const { currentRoute, push } = useRouter()
 
 const { t } = useI18n()
 

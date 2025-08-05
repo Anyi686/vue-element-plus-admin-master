@@ -6,8 +6,9 @@ export interface UserLoginType {
 export interface UserType {
   account: string
   password: string
-  role: string
-  roleId: string
+  role?: string
+  roleId?: string
   token?: string
   permissions?: string[] | string
+  username?: string
 }
