@@ -11,7 +11,7 @@ VUE_APP_FETCH_URL = 'http://http://47.104.145.215:13086'
 # 文件上传的地址
 VITE_UPLOAD_URL='http://http://47.104.145.215:14086/fileUpload'
 # 打包路径
-VITE_BASE_PATH=/
+VITE_BASE_PATH=/vue-element-plus-admin-master/
 
 # 是否删除debugger
 VITE_DROP_DEBUGGER=true
