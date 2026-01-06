@@ -11,7 +11,7 @@ export const constantRouterMap: AppRouteRecordRaw[] = [
   {
     path: '/',
     component: Layout,
-    redirect: '/dashboard/analysis',
+    redirect: '/today-data/index',
     name: 'Root',
     meta: {
       hidden: true
@@ -88,7 +88,8 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     meta: {
       title: t('router.dashboard'),
       icon: 'vi-ant-design:dashboard-filled',
-      alwaysShow: true
+      alwaysShow: true,
+      hidden: true
     },
     children: [
       {
@@ -97,8 +98,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         name: 'Analysis',
         meta: {
           title: t('router.analysis'),
-          noCache: true,
-          affix: true
+          noCache: true
         }
       },
       {
@@ -108,6 +108,161 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         meta: {
           title: t('router.workplace'),
           noCache: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/today-data',
+    component: Layout,
+    redirect: '/today-data/index',
+    name: 'TodayData',
+    meta: {
+      title: t('router.todayData'),
+      icon: 'vi-ant-design:bar-chart-outlined'
+    },
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/TodayData/TodayData.vue'),
+        name: 'TodayDataIndex',
+        meta: {
+          title: t('router.todayData'),
+          noCache: true,
+          affix: true,
+          hidden: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/data-upload',
+    component: Layout,
+    redirect: '/data-upload/index',
+    name: 'DataUpload',
+    meta: {
+      title: t('router.dataUpload'),
+      icon: 'vi-ant-design:cloud-upload-outlined'
+    },
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/DataUpload/DataUpload.vue'),
+        name: 'DataUploadIndex',
+        meta: {
+          title: t('router.dataUpload'),
+          noCache: true,
+          hidden: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/plan-setting',
+    component: Layout,
+    redirect: '/plan-setting/index',
+    name: 'PlanSetting',
+    meta: {
+      title: t('router.planSetting'),
+      icon: 'vi-ant-design:schedule-outlined'
+    },
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/PlanSetting/PlanSetting.vue'),
+        name: 'PlanSettingIndex',
+        meta: {
+          title: t('router.planSetting'),
+          noCache: true,
+          hidden: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/patient-manage',
+    component: Layout,
+    redirect: '/patient-manage/index',
+    name: 'PatientManage',
+    meta: {
+      title: t('router.patientManage'),
+      icon: 'vi-ant-design:user-outlined'
+    },
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/PatientManage/PatientManage.vue'),
+        name: 'PatientManageIndex',
+        meta: {
+          title: t('router.patientManage'),
+          noCache: true,
+          hidden: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/account-detail',
+    component: Layout,
+    redirect: '/account-detail/index',
+    name: 'AccountDetail',
+    meta: {
+      title: t('router.accountDetail'),
+      icon: 'vi-ant-design:account-book-outlined',
+      hidden: true
+    },
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/AccountDetail/AccountDetail.vue'),
+        name: 'AccountDetailIndex',
+        meta: {
+          title: t('router.accountDetail'),
+          noCache: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/sms-setting',
+    component: Layout,
+    redirect: '/sms-setting/index',
+    name: 'SmsSetting',
+    meta: {
+      title: t('router.smsSetting'),
+      icon: 'vi-ant-design:message-outlined'
+    },
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/SmsSetting/SmsSetting.vue'),
+        name: 'SmsSettingIndex',
+        meta: {
+          title: t('router.smsSetting'),
+          noCache: true,
+          hidden: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/system-setting',
+    component: Layout,
+    redirect: '/system-setting/index',
+    name: 'SystemSetting',
+    meta: {
+      title: t('router.systemSetting'),
+      icon: 'vi-ant-design:setting-outlined'
+    },
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/SystemSetting/SystemSetting.vue'),
+        name: 'SystemSettingIndex',
+        meta: {
+          title: t('router.systemSetting'),
+          noCache: true,
+          hidden: true
         }
       }
     ]

@@ -12,7 +12,7 @@ const props = defineProps({
     default: () => null
   },
   formSchema: {
-    type: Object as PropType<FormSchema[]>,
+    type: Array as PropType<FormSchema[]>,
     default: () => []
   }
 })

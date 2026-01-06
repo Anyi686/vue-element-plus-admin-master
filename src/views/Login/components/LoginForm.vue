@@ -1,199 +1,28 @@
-<script setup lang="tsx">
-import { reactive, ref, watch, onMounted, unref } from 'vue'
-import { Form, FormSchema } from '@/components/Form'
-import { useI18n } from '@/hooks/web/useI18n'
-import { ElCheckbox, ElLink, ElMessage } from 'element-plus'
-import { useForm } from '@/hooks/web/useForm'
+<script setup lang="ts">
+import { reactive, ref, watch, onMounted } from 'vue'
+import { ElForm, ElFormItem, ElInput, ElCheckbox, ElButton, ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { UserType } from '@/api/login/types'
-import { useValidator } from '@/hooks/web/useValidator'
-import { Icon } from '@/components/Icon'
 import { useUserStore } from '@/store/modules/user'
-import { BaseButton } from '@/components/Button'
-
-const { required } = useValidator()
-
-const emit = defineEmits(['to-register'])
+import type { FormInstance, FormRules } from 'element-plus'
 
 const userStore = useUserStore()
-
 const { currentRoute, push } = useRouter()
 
-const { t } = useI18n()
-
-const rules = {
-  account: [required()],
-  password: [required()]
-}
-
-const schema = reactive<FormSchema[]>([
-  {
-    field: 'title',
-    colProps: {
-      span: 24
-    },
-    formItemProps: {
-      slots: {
-        default: () => {
-          return (
-            <div class="text-center w-[100%]">
-              <h2 class="text-2xl font-bold">{t('login.login')}</h2>
-              <p class="text-sm text-gray-500 mt-2">默认账号：admin，密码：123456</p>
-            </div>
-          )
-        }
-      }
-    }
-  },
-  {
-    field: 'account',
-    label: t('login.username'),
-    component: 'Input',
-    colProps: {
-      span: 24
-    },
-    componentProps: {
-      placeholder: '请输入用户名'
-    },
-    value: 'admin'
-  },
-  {
-    field: 'password',
-    label: t('login.password'),
-    component: 'InputPassword',
-    colProps: {
-      span: 24
-    },
-    formItemProps: {
-      rules: [required()]
-    },
-    componentProps: {
-      style: {
-        width: '100%'
-      },
-      placeholder: '请输入密码',
-      onKeydown: (_e: any) => {
-        if (_e.key === 'Enter') {
-          _e.stopPropagation()
-          signIn()
-        }
-      }
-    },
-    value: '123456'
-  },
-  {
-    field: 'tool',
-    colProps: {
-      span: 24
-    },
-    formItemProps: {
-      slots: {
-        default: () => {
-          return (
-            <>
-              <div class="flex justify-between items-center w-[100%]">
-                <ElCheckbox v-model={remember.value} label={t('login.remember')} size="small" />
-                <ElLink type="primary" underline={false}>
-                  {t('login.forgetPassword')}
-                </ElLink>
-              </div>
-            </>
-          )
-        }
-      }
-    }
-  },
-  {
-    field: 'login',
-    colProps: {
-      span: 24
-    },
-    formItemProps: {
-      slots: {
-        default: () => {
-          return (
-            <>
-              <div class="w-[100%]">
-                <BaseButton
-                  loading={loading.value}
-                  type="primary"
-                  class="w-[100%]"
-                  onClick={signIn}
-                >
-                  {t('login.login')}
-                </BaseButton>
-              </div>
-              <div class="w-[100%] mt-15px">
-                <BaseButton class="w-[100%]" onClick={toRegister}>
-                  {t('login.register')}
-                </BaseButton>
-              </div>
-            </>
-          )
-        }
-      }
-    }
-  },
-  {
-    field: 'other',
-    component: 'Divider',
-    label: t('login.otherLogin'),
-    componentProps: {
-      contentPosition: 'center'
-    }
-  },
-  {
-    field: 'otherIcon',
-    colProps: {
-      span: 24
-    },
-    formItemProps: {
-      slots: {
-        default: () => {
-          return (
-            <>
-              <div class="flex justify-center w-[100%]">
-                <Icon
-                  icon="vi-ant-design:wechat-filled"
-                  size={iconSize}
-                  class="cursor-pointer ant-icon"
-                  color={iconColor}
-                  hoverColor={hoverColor}
-                />
-              </div>
-            </>
-          )
-        }
-      }
-    }
-  }
-])
-
-const iconSize = 30
-
-const remember = ref(userStore.getRememberMe)
-
-const initLoginInfo = () => {
-  const loginInfo = userStore.getLoginInfo
-  if (loginInfo) {
-    const { account, password } = loginInfo
-    setValues({ account, password })
-  }
-}
-onMounted(() => {
-  initLoginInfo()
+// 登录表单
+const loginFormRef = ref<FormInstance>()
+const loginForm = reactive({
+  account: '',
+  password: '',
+  rememberMe: false
 })
 
-const { formRegister, formMethods } = useForm()
-const { getFormData, getElFormExpose, setValues } = formMethods
+const loginRules: FormRules = {
+  account: [{ required: true, message: '请输入您的账号', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入您的密码', trigger: 'blur' }]
+}
 
 const loading = ref(false)
-
-const iconColor = '#999'
-
-const hoverColor = 'var(--el-color-primary)'
-
 const redirect = ref<string>('')
 
 watch(
@@ -201,45 +30,53 @@ watch(
   (route: RouteLocationNormalizedLoaded) => {
     redirect.value = route?.query?.redirect as string
   },
-  {
-    immediate: true
-  }
+  { immediate: true }
 )
 
-// 登录
-const signIn = async () => {
-  const formRef = await getElFormExpose()
-  await formRef?.validate(async (isValid) => {
-    if (isValid) {
-      loading.value = true
-      const formData = await getFormData<UserType>()
-      try {
-        const res = await userStore.login(formData)
-        console.log('Login result:', res) // 添加日志，查看登录结果
+// 初始化
+onMounted(() => {
+  initLoginInfo()
+})
 
-        // 是否记住我
-        if (unref(remember)) {
-          userStore.setLoginInfo(formData)
+// 初始化记住的登录信息
+const initLoginInfo = () => {
+  const loginInfo = userStore.getLoginInfo
+  if (loginInfo) {
+    loginForm.account = loginInfo.account || ''
+    loginForm.password = loginInfo.password || ''
+    loginForm.rememberMe = true
+  }
+}
+
+// 账号密码登录
+const handleLogin = async () => {
+  if (!loginFormRef.value) return
+
+  await loginFormRef.value.validate(async (valid) => {
+    if (valid) {
+      loading.value = true
+      try {
+        await userStore.login({
+          account: loginForm.account,
+          password: loginForm.password
+        })
+
+        // 记住密码
+        if (loginForm.rememberMe) {
+          userStore.setLoginInfo({
+            account: loginForm.account,
+            password: loginForm.password
+          })
         } else {
           userStore.setLoginInfo(undefined)
         }
 
-        // 登录成功提示
         ElMessage.success('登录成功')
-
-        // 直接跳转到首页
-        console.log('Redirecting to:', redirect.value || '/dashboard/analysis')
-
-        // 使用setTimeout确保路由跳转在下一个事件循环执行
         setTimeout(() => {
-          push({
-            path: redirect.value || '/dashboard/analysis',
-            replace: true
-          })
+          push({ path: redirect.value || '/today-data/index', replace: true })
         }, 100)
       } catch (error) {
-        // 处理登录错误
-        console.error('Login error:', error)
+        console.error('登录失败:', error)
         ElMessage.error((error as Error).message || '登录失败')
       } finally {
         loading.value = false
@@ -247,20 +84,39 @@ const signIn = async () => {
     }
   })
 }
-
-// 去注册页面
-const toRegister = () => {
-  emit('to-register')
-}
 </script>
 
 <template>
-  <Form
-    :schema="schema"
-    :rules="rules"
-    label-position="top"
-    hide-required-asterisk
-    size="large"
-    @register="formRegister"
-  />
+  <div class="login-form-container">
+    <div class="text-center text-20px mb-24px font-600">欢迎登录</div>
+
+    <ElForm ref="loginFormRef" :model="loginForm" :rules="loginRules" size="large">
+      <ElFormItem prop="account">
+        <ElInput v-model="loginForm.account" placeholder="请输入账号" @keyup.enter="handleLogin" />
+      </ElFormItem>
+      <ElFormItem prop="password">
+        <ElInput
+          v-model="loginForm.password"
+          type="password"
+          placeholder="请输入密码"
+          show-password
+          @keyup.enter="handleLogin"
+        />
+      </ElFormItem>
+      <ElFormItem>
+        <ElCheckbox v-model="loginForm.rememberMe">记住密码</ElCheckbox>
+      </ElFormItem>
+      <ElFormItem>
+        <ElButton :loading="loading" type="primary" style="width: 100%" @click="handleLogin">
+          {{ loading ? '登录中...' : '登 录' }}
+        </ElButton>
+      </ElFormItem>
+    </ElForm>
+  </div>
 </template>
+
+<style lang="less" scoped>
+.login-form-container {
+  width: 100%;
+}
+</style>

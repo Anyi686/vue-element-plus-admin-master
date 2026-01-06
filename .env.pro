@@ -5,13 +5,16 @@ VITE_NODE_ENV=production
 VITE_API_BASE_PATH='/api'
 
 # websocket地址
-VITE_WEBSOCKET_URL='ws://http://47.104.145.215:13088'
+VITE_WEBSOCKET_URL='/socket'
+
 # api地址
-VUE_APP_FETCH_URL = 'http://http://47.104.145.215:13086'
+VITE_FETCH_URL='/wechatapi'
+
 # 文件上传的地址
-VITE_UPLOAD_URL='http://http://47.104.145.215:14086/fileUpload'
+VITE_UPLOAD_URL='http://47.104.145.215:14086/fileUpload'
+
 # 打包路径
-VITE_BASE_PATH=/vue-element-plus-admin-master/
+VITE_BASE_PATH=/
 
 # 是否删除debugger
 VITE_DROP_DEBUGGER=true
@@ -23,19 +26,19 @@ VITE_DROP_CONSOLE=true
 VITE_SOURCEMAP=false
 
 # 输出路径
-VITE_OUT_DIR=dist-pro
+VITE_OUT_DIR=dist
 
 # 标题
-VITE_APP_TITLE=AI后台管理系统
+VITE_APP_TITLE=瓴可AI管理系统
 
 # 是否包分析
-VITE_USE_BUNDLE_ANALYZER=true
+VITE_USE_BUNDLE_ANALYZER=false
 
 # 是否全量引入element-plus样式
 VITE_USE_ALL_ELEMENT_PLUS_STYLE=false
 
 # 是否开启mock
-VITE_USE_MOCK=true
+VITE_USE_MOCK=false
 
 # 是否切割css
 VITE_USE_CSS_SPLIT=true

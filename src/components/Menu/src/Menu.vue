@@ -1,5 +1,5 @@
 <script lang="tsx">
-import { computed, defineComponent, unref, PropType } from 'vue'
+import { computed, defineComponent, unref, PropType, ref, watch } from 'vue'
 import { ElMenu, ElScrollbar } from 'element-plus'
 import { useAppStore } from '@/store/modules/app'
 import { usePermissionStore } from '@/store/modules/permission'
@@ -48,14 +48,34 @@ export default defineComponent({
 
     const uniqueOpened = computed(() => appStore.getUniqueOpened)
 
-    const activeMenu = computed(() => {
-      const { meta, path } = unref(currentRoute)
+    // 计算当前路由对应的菜单路径
+    const getMenuPath = (route: typeof currentRoute.value) => {
       // if set path, the sidebar will highlight the path you set
-      if (meta.activeMenu) {
-        return meta.activeMenu as string
+      if (route.meta.activeMenu) {
+        return route.meta.activeMenu as string
       }
-      return path
-    })
+      // 对于隐藏的子路由（如 /today-data/index），需要匹配到父级菜单路径（如 /today-data）
+      // 因为菜单项的 index 是父级路径，不是子路由的完整路径
+      if (route.meta.hidden && route.matched.length > 1) {
+        // 返回父级路由的路径作为 activeMenu
+        const parentRoute = route.matched[route.matched.length - 2]
+        if (parentRoute) {
+          return parentRoute.path
+        }
+      }
+      return route.path
+    }
+
+    // 使用 ref 存储当前激活的菜单路径，这样可以在点击时立即更新
+    const activeMenu = ref(getMenuPath(currentRoute.value))
+
+    // 监听路由变化，同步更新 activeMenu
+    watch(
+      () => currentRoute.value,
+      (route) => {
+        activeMenu.value = getMenuPath(route)
+      }
+    )
 
     const menuSelect = (index: string) => {
       if (props.menuSelect) {
@@ -65,6 +85,8 @@ export default defineComponent({
       if (isUrl(index)) {
         window.open(index)
       } else {
+        // 立即更新选中状态，不等待路由变化
+        activeMenu.value = index
         push(index)
       }
     }
@@ -80,7 +102,8 @@ export default defineComponent({
     const renderMenu = () => {
       return (
         <ElMenu
-          defaultActive={unref(activeMenu)}
+          key={activeMenu.value}
+          defaultActive={activeMenu.value}
           mode={unref(menuMode)}
           collapse={
             unref(layout) === 'top' || unref(layout) === 'cutMenu' ? false : unref(collapse)

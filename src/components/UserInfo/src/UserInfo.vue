@@ -17,6 +17,12 @@ const lockStore = useLockStore()
 
 const getIsLock = computed(() => lockStore.getLockInfo?.isLock ?? false)
 
+// 显示名称：优先显示昵称，其次用户名，最后账号
+const displayName = computed(() => {
+  const info = userStore.getUserInfo
+  return info?.nick || info?.username || info?.account || ''
+})
+
 const { getPrefixCls } = useDesign()
 
 const prefixCls = getPrefixCls('user-info')
@@ -34,10 +40,6 @@ const lockScreen = () => {
   dialogVisible.value = true
 }
 
-const toDocument = () => {
-  window.open('https://element-plus-admin-doc.cn/')
-}
-
 const toPage = (path: string) => {
   push(path)
 }
@@ -46,14 +48,14 @@ const toPage = (path: string) => {
 <template>
   <ElDropdown class="custom-hover" :class="prefixCls" trigger="click">
     <div class="flex items-center">
+      <span class="<lg:hidden text-14px font-600 pr-8px text-[var(--top-header-text-color)]">{{
+        displayName
+      }}</span>
       <img
         src="@/assets/imgs/avatar.jpg"
         alt=""
         class="w-[calc(var(--logo-height)-25px)] rounded-[50%]"
       />
-      <span class="<lg:hidden text-14px pl-[5px] text-[var(--top-header-text-color)]">{{
-        userStore.getUserInfo?.username
-      }}</span>
     </div>
     <template #dropdown>
       <ElDropdownMenu>
@@ -61,9 +63,6 @@ const toPage = (path: string) => {
           <div @click="toPage('/personal/personal-center')">
             {{ t('router.personalCenter') }}
           </div>
-        </ElDropdownItem>
-        <ElDropdownItem>
-          <div @click="toDocument">{{ t('common.document') }}</div>
         </ElDropdownItem>
         <ElDropdownItem divided>
           <div @click="lockScreen">{{ t('lock.lockScreen') }}</div>

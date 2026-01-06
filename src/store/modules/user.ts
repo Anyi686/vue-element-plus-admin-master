@@ -3,6 +3,8 @@ import { store } from '../index'
 import { UserLoginType, UserType } from '@/api/login/types'
 import { ElMessageBox } from 'element-plus'
 import { useI18n } from '@/hooks/web/useI18n'
+import { loginApi, getUserInfoApi } from '@/api/login'
+import md5 from 'md5'
 
 import { useTagsViewStore } from './tagsView'
 import router from '@/router'
@@ -11,9 +13,11 @@ interface UserState {
   userInfo?: UserType
   tokenKey: string
   token: string
+  socketToken: string
   roleRouters?: string[] | AppCustomRouteRecordRaw[]
   rememberMe: boolean
   loginInfo?: UserLoginType
+  isWechatLogin: boolean
 }
 
 export const useUserStore = defineStore('user', {
@@ -22,10 +26,12 @@ export const useUserStore = defineStore('user', {
       userInfo: undefined,
       tokenKey: 'Authorization',
       token: '',
+      socketToken: '',
       roleRouters: undefined,
       // 记住我
       rememberMe: true,
-      loginInfo: undefined
+      loginInfo: undefined,
+      isWechatLogin: false
     }
   },
   getters: {
@@ -34,6 +40,9 @@ export const useUserStore = defineStore('user', {
     },
     getToken(): string {
       return this.token
+    },
+    getSocketToken(): string {
+      return this.socketToken
     },
     getUserInfo(): UserType | undefined {
       return this.userInfo
@@ -46,34 +55,72 @@ export const useUserStore = defineStore('user', {
     },
     getLoginInfo(): UserLoginType | undefined {
       return this.loginInfo
+    },
+    getIsWechatLogin(): boolean {
+      return this.isWechatLogin
     }
   },
   actions: {
     async login(loginData: UserLoginType) {
       const { account, password } = loginData
 
-      // 使用固定账号密码验证
-      if (account === 'admin' && password === '123456') {
-        // 模拟登录成功，创建用户信息
-        const mockUserData = {
-          account: 'admin',
-          password: '123456',
-          username: '管理员',
-          token: 'mock-token-' + Date.now(),
-          role: 'admin',
-          roleId: '1',
-          permissions: ['*:*:*'] // 给予所有权限
-        }
+      try {
+        // 调用登录接口，密码使用 md5 加密
+        const res = await loginApi({
+          account,
+          password: md5(password)
+        })
 
-        console.log('Login successful with fixed credentials')
-        this.setToken(mockUserData.token)
-        this.setUserInfo(mockUserData)
-        return mockUserData
-      } else {
-        // 账号密码错误
-        console.error('Invalid credentials. Use admin/123456')
-        throw new Error('用户名或密码错误，请使用 admin/123456')
+        if (res.code === 200 && res.data) {
+          const userData = res.data
+          console.log('Login successful:', userData)
+
+          this.setToken(userData.token || '')
+          if (userData.socketToken) {
+            this.setSocketToken(userData.socketToken)
+          }
+          this.setUserInfo(userData)
+          this.setIsWechatLogin(false)
+
+          // 登录成功后获取用户详细信息
+          await this.fetchUserInfo()
+
+          return userData
+        } else {
+          throw new Error((res as any).message || '登录失败')
+        }
+      } catch (error) {
+        console.error('Login error:', error)
+        throw error
       }
+    },
+    // 获取用户详细信息
+    async fetchUserInfo() {
+      try {
+        const res = await getUserInfoApi()
+        if (res.code === 200 && res.data) {
+          // 合并用户信息
+          this.setUserInfo({
+            ...this.userInfo,
+            ...res.data
+          })
+          console.log('User info fetched:', res.data)
+          return res.data
+        }
+      } catch (error) {
+        console.error('Fetch user info error:', error)
+      }
+    },
+    // 微信登录成功后设置用户信息
+    async setWechatLoginInfo(userData: UserType) {
+      this.setToken(userData.token || '')
+      if (userData.socketToken) {
+        this.setSocketToken(userData.socketToken)
+      }
+      this.setUserInfo(userData)
+      this.setIsWechatLogin(true)
+      // 获取用户详细信息
+      await this.fetchUserInfo()
     },
     setTokenKey(tokenKey: string) {
       this.tokenKey = tokenKey
@@ -81,11 +128,17 @@ export const useUserStore = defineStore('user', {
     setToken(token: string) {
       this.token = token
     },
+    setSocketToken(socketToken: string) {
+      this.socketToken = socketToken
+    },
     setUserInfo(userInfo?: UserType) {
       this.userInfo = userInfo
     },
     setRoleRouters(roleRouters: string[] | AppCustomRouteRecordRaw[]) {
       this.roleRouters = roleRouters
+    },
+    setIsWechatLogin(isWechatLogin: boolean) {
+      this.isWechatLogin = isWechatLogin
     },
     logoutConfirm() {
       const { t } = useI18n()
@@ -103,8 +156,10 @@ export const useUserStore = defineStore('user', {
       const tagsViewStore = useTagsViewStore()
       tagsViewStore.delAllViews()
       this.setToken('')
+      this.setSocketToken('')
       this.setUserInfo(undefined)
       this.setRoleRouters([])
+      this.setIsWechatLogin(false)
       router.replace('/login')
     },
     logout() {
