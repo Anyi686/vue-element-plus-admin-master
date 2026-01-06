@@ -26,7 +26,7 @@ VITE_DROP_CONSOLE=true
 VITE_SOURCEMAP=false
 
 # 输出路径
-VITE_OUT_DIR=dist
+VITE_OUT_DIR=dist-pro
 
 # 标题
 VITE_APP_TITLE=瓴可AI管理系统

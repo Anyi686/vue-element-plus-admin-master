@@ -50,14 +50,18 @@
 - [pnpm](https://pnpm.io/) >= 8.1.0
 - [Git](https://git-scm.com/)
 
+## 仓库地址
+
+- **阿里云 Codeup**: <https://codeup.aliyun.com/6848f7a6455bbe90fa4f8f7c/TelSopPC.git>
+
 ## 安装使用
 
 ```bash
 # 克隆仓库
-git clone <repository-url>
+git clone https://codeup.aliyun.com/6848f7a6455bbe90fa4f8f7c/TelSopPC.git
 
 # 进入项目目录
-cd vue-element-plus-admin-AI-call
+cd TelSopPC
 
 # 安装依赖
 pnpm install
@@ -65,13 +69,13 @@ pnpm install
 # 启动开发服务器
 pnpm dev
 
-# 构建生产环境
+# 构建生产环境 (输出: dist-pro/)
 pnpm build:pro
 
-# 构建开发环境
+# 构建开发环境 (输出: dist-dev/)
 pnpm build:dev
 
-# 构建测试环境
+# 构建测试环境 (输出: dist-test/)
 pnpm build:test
 ```
 

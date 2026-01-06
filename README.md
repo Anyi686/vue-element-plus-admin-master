@@ -50,14 +50,18 @@ Lingke AI Management System is an intelligent outbound call management platform 
 - [pnpm](https://pnpm.io/) >= 8.1.0
 - [Git](https://git-scm.com/)
 
+## Repository
+
+- **Aliyun Codeup**: <https://codeup.aliyun.com/6848f7a6455bbe90fa4f8f7c/TelSopPC.git>
+
 ## Installation
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://codeup.aliyun.com/6848f7a6455bbe90fa4f8f7c/TelSopPC.git
 
 # Navigate to project directory
-cd vue-element-plus-admin-AI-call
+cd TelSopPC
 
 # Install dependencies
 pnpm install
@@ -65,13 +69,13 @@ pnpm install
 # Start development server
 pnpm dev
 
-# Build for production
+# Build for production (output: dist-pro/)
 pnpm build:pro
 
-# Build for development
+# Build for development (output: dist-dev/)
 pnpm build:dev
 
-# Build for testing
+# Build for testing (output: dist-test/)
 pnpm build:test
 ```
 
