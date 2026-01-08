@@ -374,7 +374,7 @@ const handleHistorySizeChange = (size: number) => {
 <template>
   <div class="data-upload-container flex bg-gray-100 gap-16px">
     <!-- 左侧导入类型列表 -->
-    <div class="left-sidebar w-180px flex-shrink-0">
+    <div class="left-sidebar w-200px flex-shrink-0">
       <div class="left-menu-wrapper bg-white rounded-12px shadow-sm p-12px">
         <div
           v-for="item in importTypes"
@@ -388,7 +388,7 @@ const handleHistorySizeChange = (size: number) => {
           @click="handleTypeChange(item.id)"
         >
           <Icon :icon="item.icon" class="text-16px flex-shrink-0" />
-          <span class="text-13px font-500">{{ item.name }}</span>
+          <span class="text-13px font-500 whitespace-nowrap">{{ item.name }}</span>
         </div>
       </div>
     </div>

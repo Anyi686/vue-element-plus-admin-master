@@ -208,8 +208,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     name: 'AccountDetail',
     meta: {
       title: t('router.accountDetail'),
-      icon: 'vi-ant-design:account-book-outlined',
-      hidden: true
+      icon: 'vi-ant-design:account-book-outlined'
     },
     children: [
       {
@@ -218,7 +217,8 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         name: 'AccountDetailIndex',
         meta: {
           title: t('router.accountDetail'),
-          noCache: true
+          noCache: true,
+          hidden: true
         }
       }
     ]
@@ -275,7 +275,8 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     meta: {
       title: t('router.authorization'),
       icon: 'vi-eos-icons:role-binding',
-      alwaysShow: true
+      alwaysShow: true,
+      hidden: true
     },
     children: [
       {

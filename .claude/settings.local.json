@@ -21,7 +21,9 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: 完善瓴可AI管理系统功能模块\n\n- 新增今日数据、患者管理、计划设置、数据上传等页面\n- 新增短信设置、系统设置、账户详情等功能模块\n- 更新 README 文档，适配瓴可AI管理系统\n- 优化环境配置和接口地址\n- 添加微信登录图标\n- 修复 TypeScript 类型错误\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git push:*)",
       "Bash(git branch:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run build-only:*)"
     ],
     "deny": [],
     "ask": []

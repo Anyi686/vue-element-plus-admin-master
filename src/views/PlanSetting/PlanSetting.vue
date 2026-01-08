@@ -8,7 +8,12 @@ import {
   ElMessageBox,
   ElPagination,
   ElInput,
-  ElInputNumber
+  ElInputNumber,
+  ElDialog,
+  ElForm,
+  ElFormItem,
+  ElSelect,
+  ElOption
 } from 'element-plus'
 import { Icon } from '@/components/Icon'
 import { useI18n } from '@/hooks/web/useI18n'
@@ -238,12 +243,62 @@ const handleEditFinish = () => {
 const handleMarketingDaysChange = () => {
   ElMessage.success('编辑成功')
 }
+
+// 添加计划弹窗
+const addDialogVisible = ref(false)
+const addForm = reactive({
+  planType: '',
+  marketingDays: 1,
+  scriptContent: ''
+})
+
+// 打开添加计划弹窗
+const handleOpenAddDialog = () => {
+  addForm.planType = activePlanType.value
+  addForm.marketingDays = 1
+  addForm.scriptContent = ''
+  addDialogVisible.value = true
+}
+
+// 保存新计划
+const handleSaveNewPlan = () => {
+  if (!addForm.planType) {
+    ElMessage.warning('请选择计划类型')
+    return
+  }
+  if (!addForm.scriptContent.trim()) {
+    ElMessage.warning('请输入话术内容')
+    return
+  }
+
+  const targetData = planDataMap.value[addForm.planType]
+  const maxId = targetData.length > 0 ? Math.max(...targetData.map((item) => item.id)) : 0
+
+  const newPlan = {
+    id: maxId + 1,
+    marketingDays: addForm.marketingDays,
+    scriptContent: addForm.scriptContent,
+    taskDetail: '',
+    enabled: false
+  }
+
+  targetData.push(newPlan)
+
+  // 如果添加到当前选中的类型，切换到最后一页显示新数据
+  if (addForm.planType === activePlanType.value) {
+    const totalPages = Math.ceil(targetData.length / pagination.pageSize)
+    pagination.currentPage = totalPages
+  }
+
+  ElMessage.success('添加成功')
+  addDialogVisible.value = false
+}
 </script>
 
 <template>
   <div class="plan-setting-container flex bg-gray-100 gap-16px">
     <!-- 左侧计划类型列表 -->
-    <div class="left-sidebar w-180px flex-shrink-0">
+    <div class="left-sidebar w-200px flex-shrink-0">
       <div class="left-menu-wrapper bg-white rounded-12px shadow-sm p-12px">
         <div
           v-for="item in planTypes"
@@ -257,17 +312,23 @@ const handleMarketingDaysChange = () => {
           @click="handlePlanTypeClick(item.key)"
         >
           <Icon :icon="item.icon" class="text-16px flex-shrink-0" />
-          <span class="text-13px font-500">{{ item.name }}</span>
+          <span class="text-13px font-500 whitespace-nowrap">{{ item.name }}</span>
         </div>
       </div>
     </div>
 
     <!-- 右侧表格区域 -->
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-      <!-- 页面标题 -->
-      <div class="text-16px font-600 text-gray-800 mb-16px flex items-center flex-shrink-0">
-        <span class="w-4px h-18px bg-blue-500 rounded-full mr-10px"></span>
-        {{ t('router.planSetting') }}
+      <!-- 页面标题和添加按钮 -->
+      <div class="flex items-center justify-between mb-16px flex-shrink-0">
+        <div class="text-16px font-600 text-gray-800 flex items-center">
+          <span class="w-4px h-18px bg-blue-500 rounded-full mr-10px"></span>
+          {{ t('router.planSetting') }}
+        </div>
+        <ElButton type="primary" @click="handleOpenAddDialog">
+          <Icon icon="ep:plus" class="mr-4px" />
+          添加计划
+        </ElButton>
       </div>
 
       <!-- 表格容器 -->
@@ -370,6 +431,50 @@ const handleMarketingDaysChange = () => {
         </div>
       </div>
     </div>
+
+    <!-- 添加计划弹窗 -->
+    <ElDialog v-model="addDialogVisible" title="添加计划" width="600px" destroy-on-close>
+      <ElForm :model="addForm" label-width="100px" class="add-plan-form">
+        <ElFormItem label="计划类型">
+          <ElSelect v-model="addForm.planType" placeholder="请选择计划类型" style="width: 100%">
+            <ElOption
+              v-for="item in planTypes"
+              :key="item.key"
+              :label="item.name"
+              :value="item.key"
+            />
+          </ElSelect>
+        </ElFormItem>
+        <ElFormItem label="营销天数">
+          <div class="flex items-center gap-8px">
+            <span class="text-gray-600">第</span>
+            <ElInputNumber
+              v-model="addForm.marketingDays"
+              :min="1"
+              :max="365"
+              controls-position="right"
+              class="marketing-days-input"
+            />
+            <span class="text-gray-600">天</span>
+          </div>
+        </ElFormItem>
+        <ElFormItem label="话术内容">
+          <ElInput
+            v-model="addForm.scriptContent"
+            type="textarea"
+            :rows="8"
+            placeholder="请输入话术内容"
+            class="script-textarea"
+          />
+        </ElFormItem>
+      </ElForm>
+      <template #footer>
+        <div class="flex justify-end gap-12px">
+          <ElButton @click="addDialogVisible = false">取消</ElButton>
+          <ElButton type="primary" @click="handleSaveNewPlan">保存</ElButton>
+        </div>
+      </template>
+    </ElDialog>
   </div>
 </template>
 
@@ -600,5 +705,58 @@ const handleMarketingDaysChange = () => {
 :deep(.marketing-days-input .el-input-number__increase:hover) {
   color: #3b82f6;
   background: #eff6ff;
+}
+
+/* 添加计划弹窗样式 */
+.add-plan-form {
+  padding: 16px 0;
+}
+
+:deep(.add-plan-form .el-form-item) {
+  margin-bottom: 20px;
+}
+
+:deep(.add-plan-form .el-form-item__label) {
+  font-weight: 500;
+  color: #374151;
+}
+
+.script-textarea {
+  width: 100%;
+}
+
+:deep(.script-textarea .el-textarea__inner) {
+  font-size: 14px;
+  line-height: 1.6;
+  border-radius: 8px;
+}
+
+:deep(.script-textarea .el-textarea__inner:focus) {
+  box-shadow: 0 0 0 2px #c7d2fe;
+}
+
+/* 弹窗样式 */
+:deep(.el-dialog) {
+  border-radius: 12px;
+}
+
+:deep(.el-dialog__header) {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+:deep(.el-dialog__title) {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+:deep(.el-dialog__body) {
+  padding: 20px;
+}
+
+:deep(.el-dialog__footer) {
+  padding: 12px 20px;
+  border-top: 1px solid #f3f4f6;
 }
 </style>

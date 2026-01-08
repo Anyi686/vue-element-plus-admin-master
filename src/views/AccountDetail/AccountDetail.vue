@@ -45,12 +45,17 @@ const handleRecharge = () => {
 const handlePageChange = (page: number) => {
   pagination.value.currentPage = page
 }
+
+const handleSizeChange = (size: number) => {
+  pagination.value.pageSize = size
+  pagination.value.currentPage = 1
+}
 </script>
 
 <template>
-  <div class="p-20px bg-gray-50 min-h-full">
+  <div class="account-detail-container flex flex-col bg-gray-100 gap-16px">
     <!-- 账户概览 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-20px mb-28px">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-16px flex-shrink-0">
       <!-- 总消费卡片 -->
       <div class="summary-card">
         <div class="flex items-center justify-between">
@@ -85,9 +90,11 @@ const handlePageChange = (page: number) => {
     </div>
 
     <!-- 账单明细 -->
-    <div class="bg-white rounded-16px shadow-sm overflow-hidden">
+    <div class="table-wrapper flex-1 bg-white rounded-12px shadow-sm overflow-hidden flex flex-col">
       <!-- 标题栏 -->
-      <div class="flex items-center justify-between px-24px py-16px border-b border-gray-100">
+      <div
+        class="flex items-center justify-between px-20px py-14px border-b border-gray-100 flex-shrink-0"
+      >
         <div class="text-16px font-600 text-gray-800 flex items-center">
           <span class="w-4px h-18px bg-blue-500 rounded-full mr-10px"></span>
           {{ t('accountDetail.billDetails') }}
@@ -102,8 +109,8 @@ const handlePageChange = (page: number) => {
       <ElTable
         :data="billList"
         style="width: 100%"
+        class="flex-1 custom-table"
         :row-class-name="tableRowClassName"
-        class="custom-table"
       >
         <ElTableColumn
           prop="patientName"
@@ -145,12 +152,14 @@ const handlePageChange = (page: number) => {
       </ElTable>
 
       <!-- 分页 -->
-      <div class="flex justify-center py-16px border-t border-gray-100">
+      <div class="flex justify-end p-12px border-t border-gray-100 flex-shrink-0">
         <ElPagination
           v-model:current-page="pagination.currentPage"
-          :page-size="pagination.pageSize"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="[10, 20, 50, 100]"
           :total="pagination.total"
-          layout="prev, pager, next"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
           @current-change="handlePageChange"
         />
       </div>
@@ -159,12 +168,18 @@ const handlePageChange = (page: number) => {
 </template>
 
 <style scoped>
+/* 容器高度自适应 */
+.account-detail-container {
+  height: calc(100vh - 170px);
+  overflow: hidden;
+}
+
 /* 概览卡片 */
 .summary-card {
-  padding: 24px;
+  padding: 20px;
   background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 5%);
   transition: all 0.3s;
 }
 
@@ -173,9 +188,20 @@ const handlePageChange = (page: number) => {
   box-shadow: 0 8px 24px rgb(0 0 0 / 8%);
 }
 
+/* 表格容器 */
+.table-wrapper {
+  min-height: 0;
+}
+
 /* 表格整体样式 */
 .custom-table {
   --el-table-border-color: transparent;
+
+  overflow: auto;
+}
+
+:deep(.custom-table .el-table__inner-wrapper) {
+  height: 100%;
 }
 
 :deep(.el-table) {

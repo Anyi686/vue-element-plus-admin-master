@@ -6,9 +6,9 @@ VITE_API_BASE_PATH='/api'
 
 # websocket地址
 VITE_WEBSOCKET_URL='/socket'
+VITE_FETCH_URL='/wechatapi'
 
 # api地址
-VITE_FETCH_URL='/wechatapi'
 
 # 文件上传的地址
 VITE_UPLOAD_URL='http://47.104.145.215:14086/fileUpload'
