@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 import {
   ElButton,
   ElTable,
@@ -9,24 +9,57 @@ import {
   ElUpload,
   ElMessage,
   ElEmpty,
-  ElPagination
+  ElPagination,
+  ElSkeleton,
+  ElSkeletonItem
 } from 'element-plus'
 import { Icon } from '@/components/Icon'
 import type { UploadProps } from 'element-plus'
 
 // 左侧导入类型列表
-const importTypes = ref([
-  { id: 1, name: '预约导入', icon: 'ep:calendar' },
-  { id: 2, name: '新患者开发导入', icon: 'ep:user-filled' },
-  { id: 3, name: '老患者激活导入', icon: 'ep:refresh' },
-  { id: 4, name: '患者sop全年计划导入', icon: 'ep:document' },
-  { id: 5, name: '五个定期计划', icon: 'ep:timer' },
-  { id: 6, name: 'PMTC预防会员导入', icon: 'ep:medal' },
-  { id: 7, name: '自定义跟进计划', icon: 'ep:edit' }
-])
+const importTypes = ref<{ id: number; name: string }[]>([])
+
+// 菜单加载状态
+const menuLoading = ref(false)
+
+// 模拟获取导入类型接口
+const fetchImportTypes = (): Promise<{ id: number; name: string }[]> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([
+        { id: 1, name: '预约导入' },
+        { id: 2, name: '新患者开发导入' },
+        { id: 3, name: '老患者激活导入' },
+        { id: 4, name: '患者sop全年计划导入' },
+        { id: 5, name: '五个定期计划' },
+        { id: 6, name: 'PMTC预防会员导入' },
+        { id: 7, name: '自定义跟进计划' }
+      ])
+    }, 500)
+  })
+}
+
+// 加载导入类型数据
+const loadImportTypes = async () => {
+  menuLoading.value = true
+  try {
+    const data = await fetchImportTypes()
+    importTypes.value = data
+    if (data.length > 0) {
+      activeType.value = data[0].id
+    }
+  } finally {
+    menuLoading.value = false
+  }
+}
 
 // 当前选中的导入类型
-const activeType = ref(1)
+const activeType = ref(0)
+
+// 初始化加载
+onMounted(() => {
+  loadImportTypes()
+})
 
 // 格式化今天日期
 const formatTodayDate = () => {
@@ -374,22 +407,34 @@ const handleHistorySizeChange = (size: number) => {
 <template>
   <div class="data-upload-container flex bg-gray-100 gap-16px">
     <!-- 左侧导入类型列表 -->
-    <div class="left-sidebar w-200px flex-shrink-0">
+    <div class="left-sidebar flex-shrink-0">
       <div class="left-menu-wrapper bg-white rounded-12px shadow-sm p-12px">
-        <div
-          v-for="item in importTypes"
-          :key="item.id"
-          :class="[
-            'flex items-center gap-8px px-14px py-12px rounded-8px cursor-pointer transition-all duration-200 mb-8px last:mb-0',
-            activeType === item.id
-              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
-              : 'bg-gray-50 text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-          ]"
-          @click="handleTypeChange(item.id)"
-        >
-          <Icon :icon="item.icon" class="text-16px flex-shrink-0" />
-          <span class="text-13px font-500 whitespace-nowrap">{{ item.name }}</span>
-        </div>
+        <!-- 加载骨架屏 -->
+        <template v-if="menuLoading">
+          <div v-for="i in 7" :key="i" class="mb-8px last:mb-0">
+            <ElSkeleton animated>
+              <template #template>
+                <ElSkeletonItem variant="text" class="!h-40px !rounded-8px" />
+              </template>
+            </ElSkeleton>
+          </div>
+        </template>
+        <!-- 菜单列表 -->
+        <template v-else>
+          <div
+            v-for="item in importTypes"
+            :key="item.id"
+            :class="[
+              'flex items-center gap-8px px-14px py-12px rounded-8px cursor-pointer transition-all duration-200 mb-8px last:mb-0',
+              activeType === item.id
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
+                : 'bg-gray-50 text-gray-700 hover:bg-blue-50 hover:text-blue-600'
+            ]"
+            @click="handleTypeChange(item.id)"
+          >
+            <span class="text-13px font-500 whitespace-nowrap">{{ item.name }}</span>
+          </div>
+        </template>
       </div>
     </div>
 

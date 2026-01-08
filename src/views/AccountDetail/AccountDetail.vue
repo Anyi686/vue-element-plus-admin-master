@@ -90,7 +90,7 @@ const handleSizeChange = (size: number) => {
     </div>
 
     <!-- 账单明细 -->
-    <div class="table-wrapper flex-1 bg-white rounded-12px shadow-sm overflow-hidden flex flex-col">
+    <div class="table-wrapper flex-1 bg-white rounded-16px shadow-sm overflow-hidden flex flex-col">
       <!-- 标题栏 -->
       <div
         class="flex items-center justify-between px-20px py-14px border-b border-gray-100 flex-shrink-0"
@@ -178,7 +178,7 @@ const handleSizeChange = (size: number) => {
 .summary-card {
   padding: 20px;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 16px;
   box-shadow: 0 1px 3px rgb(0 0 0 / 5%);
   transition: all 0.3s;
 }
@@ -205,20 +205,20 @@ const handleSizeChange = (size: number) => {
 }
 
 :deep(.el-table) {
-  --el-table-header-bg-color: #f8fafc;
+  --el-table-header-bg-color: transparent;
 }
 
 :deep(.el-table__header th) {
   padding: 14px 0 !important;
   font-size: 13px !important;
   font-weight: 600 !important;
-  color: #475569 !important;
-  background: #f8fafc !important;
-  border-bottom: 1px solid #e2e8f0 !important;
+  color: #fff !important;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+  border: none !important;
 }
 
 :deep(.el-table__header th .cell) {
-  padding: 0 16px !important;
+  color: #fff !important;
 }
 
 :deep(.el-table__body td) {
@@ -228,6 +228,11 @@ const handleSizeChange = (size: number) => {
 
 :deep(.el-table__body td .cell) {
   padding: 0 16px !important;
+}
+
+/* 表格行样式 */
+:deep(.el-table__body tr) {
+  transition: all 0.3s ease;
 }
 
 /* 斑马纹 */

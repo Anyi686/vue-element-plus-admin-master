@@ -39,20 +39,17 @@ interface Patient {
 
 // 执行计划选项
 const executionPlanOptions = [
-  { value: 'oldPatientActivate', label: '老患者激活' },
+  { value: 'oldPatientInvite', label: '老患者邀约' },
   { value: 'fiveRegular', label: '五个定期' },
-  { value: 'pmtcCancel', label: 'PMTC销户' },
-  { value: 'yearRoundCare', label: '全年瓶病关怀' },
-  { value: 'fiveRegularCare', label: '五个定期粘护' },
-  { value: 'pmtcPreventMember', label: 'PMTC预防会员' }
+  { value: 'pmtcMaintain', label: 'PMTC维护' }
 ]
 
 // 人工计划调整选项
 const manualPlanOptions = [
   { value: 'phonePlan', label: '电话计划' },
-  { value: 'smsPlan', label: '短信计划' },
-  { value: 'visitPlan', label: '到店计划' },
-  { value: 'followUpPlan', label: '随访计划' }
+  { value: 'yearRoundCare', label: '全年随访关怀' },
+  { value: 'fiveRegularMaintain', label: '五个定期维护' },
+  { value: 'pmtcPreventMember', label: 'PMTC预防会员' }
 ]
 
 // 模拟患者数据
@@ -69,7 +66,7 @@ const patientList = ref<Patient[]>([
     appointmentDoctor: '李医生',
     treatmentItem: '种植牙',
     creator: '王管理员',
-    executionPlan: 'oldPatientActivate',
+    executionPlan: 'oldPatientInvite',
     manualPlanAdjust: 'phonePlan'
   },
   {
@@ -85,7 +82,7 @@ const patientList = ref<Patient[]>([
     treatmentItem: '牙齿矫正',
     creator: '王管理员',
     executionPlan: 'fiveRegular',
-    manualPlanAdjust: 'phonePlan'
+    manualPlanAdjust: 'yearRoundCare'
   },
   {
     id: 3,
@@ -99,8 +96,8 @@ const patientList = ref<Patient[]>([
     appointmentDoctor: '李医生',
     treatmentItem: '洁牙护理',
     creator: '张管理员',
-    executionPlan: 'pmtcPreventMember',
-    manualPlanAdjust: 'smsPlan'
+    executionPlan: 'pmtcMaintain',
+    manualPlanAdjust: 'pmtcPreventMember'
   },
   {
     id: 4,
@@ -114,8 +111,8 @@ const patientList = ref<Patient[]>([
     appointmentDoctor: '王医生',
     treatmentItem: '补牙',
     creator: '王管理员',
-    executionPlan: 'yearRoundCare',
-    manualPlanAdjust: 'phonePlan'
+    executionPlan: 'oldPatientInvite',
+    manualPlanAdjust: 'fiveRegularMaintain'
   },
   {
     id: 5,
@@ -129,8 +126,8 @@ const patientList = ref<Patient[]>([
     appointmentDoctor: '张医生',
     treatmentItem: '根管治疗',
     creator: '张管理员',
-    executionPlan: 'fiveRegularCare',
-    manualPlanAdjust: 'visitPlan'
+    executionPlan: 'fiveRegular',
+    manualPlanAdjust: 'phonePlan'
   }
 ])
 
