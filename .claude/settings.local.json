@@ -62,7 +62,8 @@
       "Bash(GIT_EDITOR=true git rebase:*)",
       "Bash(git rev-list:*)",
       "Bash(git cat-file:*)",
-      "Bash(git filter-branch:*)"
+      "Bash(git filter-branch:*)",
+      "Bash(git merge-base:*)"
     ],
     "deny": [],
     "ask": [],
