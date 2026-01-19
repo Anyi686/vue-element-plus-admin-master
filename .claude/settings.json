@@ -1,0 +1,6 @@
+{
+  "permissions": {
+    "allow": ["Bash(git stash:*)", "Read(//e/LK_AI/shenx/shenx-gwsp/**)"],
+    "additionalDirectories": ["e:\\LK_AI\\shenx\\shenx-gwsp\\src\\views"]
+  }
+}

@@ -323,7 +323,7 @@ const handleSizeChange = (size: number) => {
           </template>
         </ElTableColumn>
 
-        <ElTableColumn prop="phoneTypeLabel" label="对应电话类别" min-width="180" align="center">
+        <ElTableColumn prop="phoneTypeLabel" label="对应电话类别" width="200" align="center">
           <template #default="{ row }">
             <ElSelect
               v-model="row.phoneType"

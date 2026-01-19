@@ -3,7 +3,7 @@ import type { UserLoginType, UserType, AppInfo, LoginQrResult, CheckLoginResult 
 
 // 账号密码登录
 export const loginApi = (data: UserLoginType): Promise<IResponse<UserType>> => {
-  return request.post({ url: '/corporation/login', data })
+  return request.post({ url: '/tel/login/login', data })
 }
 
 // 获取用户信息

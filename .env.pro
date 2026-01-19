@@ -4,14 +4,10 @@ VITE_NODE_ENV=production
 # 接口前缀
 VITE_API_BASE_PATH='/api'
 
-# websocket地址
-VITE_WEBSOCKET_URL='/socket'
-VITE_FETCH_URL='/wechatapi'
-
-# api地址
 
 # 文件上传的地址
-VITE_UPLOAD_URL='http://47.104.145.215:14086/fileUpload'
+VITE_UPLOAD_URL='/tel/customer/upload'
+
 
 # 打包路径
 VITE_BASE_PATH=/
