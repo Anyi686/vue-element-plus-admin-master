@@ -1,6 +1,13 @@
 {
   "permissions": {
-    "allow": ["Bash(git stash:*)", "Read(//e/LK_AI/shenx/shenx-gwsp/**)"],
-    "additionalDirectories": ["e:\\LK_AI\\shenx\\shenx-gwsp\\src\\views"]
+    "allow": [
+      "Bash(git stash:*)",
+      "Read(//e/LK_AI/shenx/shenx-gwsp/**)",
+      "Read(//c/Users/Administrator/Desktop/sxproject/deepseekback/**)"
+    ],
+    "additionalDirectories": [
+      "e:\\LK_AI\\shenx\\shenx-gwsp\\src\\views",
+      "d:\\New project\\work-ai-wchat\\linkwechat\\src\\websocket"
+    ]
   }
 }

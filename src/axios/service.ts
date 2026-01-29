@@ -4,6 +4,7 @@ import { defaultRequestInterceptors, defaultResponseInterceptors } from './confi
 import { AxiosInstance, InternalAxiosRequestConfig, RequestConfig, AxiosResponse } from './types'
 import { ElMessage } from 'element-plus'
 import { REQUEST_TIMEOUT } from '@/constants'
+import { useUserStoreWithOut } from '@/store/modules/user'
 
 export const PATH_URL = import.meta.env.VITE_API_BASE_PATH
 
@@ -34,6 +35,13 @@ axiosInstance.interceptors.response.use(
   },
   (error: AxiosError) => {
     console.log('err： ' + error) // for debug
+    // 处理401状态码，token过期需要重新登录
+    if (error.response?.status === 401) {
+      ElMessage.error('登录已过期，请重新登录')
+      const userStore = useUserStoreWithOut()
+      userStore.logout()
+      return Promise.reject(error)
+    }
     ElMessage.error(error.message)
     return Promise.reject(error)
   }

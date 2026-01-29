@@ -156,8 +156,6 @@ const handleVoiceClone = () => {
 </template>
 
 <style scoped>
-
-
 /* 响应式布局 */
 @media (width <= 1400px) {
   .audio-grid {

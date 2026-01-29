@@ -63,13 +63,29 @@
       "Bash(git rev-list:*)",
       "Bash(git cat-file:*)",
       "Bash(git filter-branch:*)",
-      "Bash(git merge-base:*)"
+      "Bash(git merge-base:*)",
+      "Bash(dir:*)",
+      "Bash(mysql:*)",
+      "Bash(\"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" -u root -p123456 shenxun -e \"source c:/Users/Administrator/Desktop/sxproject/deepseekback/sql/app_knowledge_base.sql\")",
+      "Bash(\"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" -u root -p123456 shenxun -e \"SHOW TABLES LIKE ''app_%knowledge%'';\")",
+      "Bash(\"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" -u root -p123456 shenxun -e \"SHOW TABLES LIKE ''app_rag%'';\")",
+      "Bash(pnpm ts:check:*)",
+      "Bash(\"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\":*)",
+      "Bash(\"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" -u root -p123456 shenxun -e \"SELECT COLUMN_NAME, DATA_TYPE, COLUMN_COMMENT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ''app_deployment_task'' ORDER BY ORDINAL_POSITION;\")",
+      "Bash(\"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" -u root -p123456 shenxun --default-character-set=utf8mb4 -e \"\nALTER TABLE app_bailian_file_cache COMMENT ''百炼文件缓存表'';\nALTER TABLE app_chat_topic_knowledge COMMENT ''对话主题与知识库关联表'';\nALTER TABLE app_knowledge_base COMMENT ''RAG知识库表'';\nALTER TABLE app_knowledge_document COMMENT ''RAG知识库文档表'';\nALTER TABLE app_rag_retrieval_log COMMENT ''RAG检索日志表'';\n\")",
+      "Bash(\"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" -u root -p123456 shenxun --default-character-set=utf8mb4 -e \"\nSELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, COLUMN_COMMENT \nFROM INFORMATION_SCHEMA.COLUMNS \nWHERE TABLE_SCHEMA = ''shenxun'' \nAND TABLE_NAME IN \\(''app_training_files'', ''app_training_tasks''\\) \nAND COLUMN_NAME = ''system_prompt'';\n\")",
+      "Bash(\"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" -u root -p123456 shenxun --default-character-set=utf8mb4 -e \"SELECT job_id, job_name, job_group, invoke_target, status FROM sys_job WHERE invoke_target LIKE ''%training%'';\")",
+      "Bash(\"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" -u root -p123456 shenxun --default-character-set=utf8mb4 -e \"SELECT job_id, job_name, invoke_target, cron_expression, status FROM sys_job;\")",
+      "Bash(\"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" -u root -p123456 shenxun --default-character-set=utf8mb4 -e \"SELECT job_id, job_name, invoke_target, cron_expression, status FROM sys_job WHERE job_name LIKE ''%训练%'';\")",
+      "Bash(copy /Y \"c:\\\\Users\\\\Administrator\\\\Desktop\\\\sxproject\\\\deep-train-ai\\\\pages\\\\training\\\\index 3.vue\" \"c:\\\\Users\\\\Administrator\\\\Desktop\\\\sxproject\\\\deep-train-ai\\\\pages\\\\training\\\\index.vue\")"
     ],
     "deny": [],
     "ask": [],
     "additionalDirectories": [
       "d:\\New project\\work-ai-wchat\\linkwechat\\src\\api",
-      "d:\\New project\\linkadmin\\src\\api\\telsop"
+      "d:\\New project\\linkadmin\\src\\api\\telsop",
+      "c:\\Users\\Administrator\\Desktop\\sxproject\\deep-train-ai\\pages",
+      "c:\\Users\\Administrator\\Desktop\\sxproject\\deep-train-ai\\api\\system"
     ]
   }
 }

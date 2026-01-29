@@ -14,40 +14,36 @@ import {
   ElSkeletonItem
 } from 'element-plus'
 import { Icon } from '@/components/Icon'
-import type { UploadProps } from 'element-plus'
+import type { UploadRequestOptions } from 'element-plus'
+import {
+  getCustomerListApi,
+  uploadCustomerApi,
+  getSopTemplatesApi,
+  getFileHistoryApi
+} from '@/api/dataUpload'
+import type { CustomerType, SopTemplateType, FileHistoryType } from '@/api/dataUpload/types'
 
 // 左侧导入类型列表
-const importTypes = ref<{ id: number; name: string }[]>([])
+const importTypes = ref<SopTemplateType[]>([])
 
 // 菜单加载状态
 const menuLoading = ref(false)
-
-// 模拟获取导入类型接口
-const fetchImportTypes = (): Promise<{ id: number; name: string }[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { id: 1, name: '预约导入' },
-        { id: 2, name: '新患者开发导入' },
-        { id: 3, name: '老患者激活导入' },
-        { id: 4, name: '患者sop全年计划导入' },
-        { id: 5, name: '五个定期计划' },
-        { id: 6, name: 'PMTC预防会员导入' },
-        { id: 7, name: '自定义跟进计划' }
-      ])
-    }, 500)
-  })
-}
 
 // 加载导入类型数据
 const loadImportTypes = async () => {
   menuLoading.value = true
   try {
-    const data = await fetchImportTypes()
-    importTypes.value = data
-    if (data.length > 0) {
-      activeType.value = data[0].id
+    const res = await getSopTemplatesApi()
+    if (res.code === 200) {
+      importTypes.value = res.data.list || []
+      if (importTypes.value.length > 0) {
+        activeType.value = importTypes.value[0].typeId
+        loadTableData()
+      }
     }
+  } catch (error) {
+    console.error('加载菜单失败:', error)
+    ElMessage.error('加载菜单失败')
   } finally {
     menuLoading.value = false
   }
@@ -79,128 +75,35 @@ const importInfo = computed(() => {
 })
 
 // 表格数据
-const tableData = ref([
-  {
-    id: 1,
-    name: '张三',
-    age: 35,
-    appointmentTime: '2026-03-18 09:30',
-    recordNo: 'MR20260318001',
-    phone: '138****5678',
-    birthDate: '1991-05-12',
-    duration: '30分钟',
-    doctor: '李医生',
-    visitStatus: '已预约',
-    creator: '王助理',
-    visitType: '初诊',
-    createTime: '2026-03-17 14:30'
-  },
-  {
-    id: 2,
-    name: '李四',
-    age: 28,
-    appointmentTime: '2026-03-18 10:00',
-    recordNo: 'MR20260318002',
-    phone: '139****1234',
-    birthDate: '1998-08-20',
-    duration: '45分钟',
-    doctor: '张医生',
-    visitStatus: '已确认',
-    creator: '王助理',
-    visitType: '复诊',
-    createTime: '2026-03-17 15:20'
-  },
-  {
-    id: 3,
-    name: '王五',
-    age: 45,
-    appointmentTime: '2026-03-18 11:00',
-    recordNo: 'MR20260318003',
-    phone: '137****8901',
-    birthDate: '1981-02-15',
-    duration: '60分钟',
-    doctor: '陈医生',
-    visitStatus: '待确认',
-    creator: '李助理',
-    visitType: '初诊',
-    createTime: '2026-03-17 16:45'
-  },
-  {
-    id: 4,
-    name: '赵六',
-    age: 52,
-    appointmentTime: '2026-03-18 14:00',
-    recordNo: 'MR20260318004',
-    phone: '136****2345',
-    birthDate: '1974-11-08',
-    duration: '30分钟',
-    doctor: '李医生',
-    visitStatus: '已预约',
-    creator: '张助理',
-    visitType: '复诊',
-    createTime: '2026-03-17 17:10'
-  },
-  {
-    id: 5,
-    name: '孙七',
-    age: 31,
-    appointmentTime: '2026-03-18 15:30',
-    recordNo: 'MR20260318005',
-    phone: '135****6789',
-    birthDate: '1995-07-22',
-    duration: '45分钟',
-    doctor: '张医生',
-    visitStatus: '已确认',
-    creator: '王助理',
-    visitType: '初诊',
-    createTime: '2026-03-17 18:00'
-  },
-  {
-    id: 6,
-    name: '周八',
-    age: 39,
-    appointmentTime: '2026-03-18 16:00',
-    recordNo: 'MR20260318006',
-    phone: '134****3456',
-    birthDate: '1987-03-18',
-    duration: '30分钟',
-    doctor: '陈医生',
-    visitStatus: '待确认',
-    creator: '李助理',
-    visitType: '复诊',
-    createTime: '2026-03-17 18:30'
-  },
-  {
-    id: 7,
-    name: '吴九',
-    age: 26,
-    appointmentTime: '2026-03-19 09:00',
-    recordNo: 'MR20260318007',
-    phone: '133****7890',
-    birthDate: '2000-01-05',
-    duration: '60分钟',
-    doctor: '李医生',
-    visitStatus: '已预约',
-    creator: '张助理',
-    visitType: '初诊',
-    createTime: '2026-03-17 19:00'
-  },
-  {
-    id: 8,
-    name: '郑十',
-    age: 48,
-    appointmentTime: '2026-03-19 10:30',
-    recordNo: 'MR20260318008',
-    phone: '132****4567',
-    birthDate: '1978-09-30',
-    duration: '45分钟',
-    doctor: '张医生',
-    visitStatus: '已确认',
-    creator: '王助理',
-    visitType: '复诊',
-    createTime: '2026-03-17 19:30'
+const tableData = ref<CustomerType[]>([])
+
+// 获取当前选中菜单的type
+const getCurrentType = () => {
+  const current = importTypes.value.find((item) => item.typeId === activeType.value)
+  return current?.type || 0
+}
+
+// 加载表格数据
+const loadTableData = async () => {
+  tableLoading.value = true
+  try {
+    const res = await getCustomerListApi({
+      page: tablePagination.currentPage,
+      size: tablePagination.pageSize,
+      typeId: activeType.value,
+      type: getCurrentType()
+    })
+    if (res.code === 200) {
+      tableData.value = res.data.list || []
+      tablePagination.total = res.data.total || tableData.value.length
+    }
+  } catch (error) {
+    console.error('加载数据失败:', error)
+    ElMessage.error('加载数据失败')
+  } finally {
+    tableLoading.value = false
   }
-])
+}
 
 // 导入弹窗
 const importDialogVisible = ref(false)
@@ -209,43 +112,29 @@ const importDialogVisible = ref(false)
 const historyDialogVisible = ref(false)
 
 // 导入历史数据
-const historyData = ref([
-  {
-    id: 1,
-    date: '2026年01月15日',
-    count: 1927,
-    category: '老患者激活',
-    result: '拨通：1320人，未拨通：607人'
-  },
-  {
-    id: 2,
-    date: '2026年01月12日',
-    count: 856,
-    category: '预约导入',
-    result: '拨通：652人，未拨通：204人'
-  },
-  {
-    id: 3,
-    date: '2026年01月10日',
-    count: 2341,
-    category: '新患者开发导入',
-    result: '拨通：1856人，未拨通：485人'
-  },
-  {
-    id: 4,
-    date: '2026年01月08日',
-    count: 1205,
-    category: '患者sop全年计划导入',
-    result: '拨通：987人，未拨通：218人'
-  },
-  {
-    id: 5,
-    date: '2026年01月05日',
-    count: 678,
-    category: 'PMTC预防会员导入',
-    result: '拨通：521人，未拨通：157人'
+const historyData = ref<FileHistoryType[]>([])
+
+// 加载导入历史数据
+const loadHistoryData = async () => {
+  historyLoading.value = true
+  try {
+    const res = await getFileHistoryApi({
+      page: historyPagination.currentPage,
+      size: historyPagination.pageSize,
+      type: getCurrentType(),
+      typeId: activeType.value
+    })
+    if (res.code === 200) {
+      historyData.value = res.data.list || []
+      historyPagination.total = res.data.total || 0
+    }
+  } catch (error) {
+    console.error('加载历史数据失败:', error)
+    ElMessage.error('加载历史数据失败')
+  } finally {
+    historyLoading.value = false
   }
-])
+}
 
 // 表格加载状态
 const tableLoading = ref(false)
@@ -268,12 +157,9 @@ const historyPagination = reactive({
 // 切换导入类型
 const handleTypeChange = (id: number) => {
   if (activeType.value === id) return
-  tableLoading.value = true
   activeType.value = id
-  // 模拟加载数据
-  setTimeout(() => {
-    tableLoading.value = false
-  }, 500)
+  tablePagination.currentPage = 1
+  loadTableData()
 }
 
 // 打开导入弹窗
@@ -281,68 +167,41 @@ const handleImport = () => {
   importDialogVisible.value = true
 }
 
-// 下载数据
+// 下载模板
 const handleDownloadTemplate = () => {
-  ElMessage.success('数据下载中...')
-  const templateName = importTypes.value.find((t) => t.id === activeType.value)?.name || '导入数据'
-
-  // 表头
-  const headers = [
-    '患者姓名',
-    '年龄',
-    '预约时间',
-    '病历号',
-    '手机',
-    '出生日期',
-    '预约时长',
-    '预约医生',
-    '就诊状态',
-    '创建人',
-    '就诊类型',
-    '创建时间'
-  ]
-
-  // 数据行
-  const rows = tableData.value.map((row) => [
-    row.name,
-    row.age,
-    row.appointmentTime,
-    row.recordNo,
-    row.phone,
-    row.birthDate,
-    row.duration,
-    row.doctor,
-    row.visitStatus,
-    row.creator,
-    row.visitType,
-    row.createTime
-  ])
-
-  // 生成CSV内容
-  const csvContent =
-    '\uFEFF' +
-    headers.join(',') +
-    '\n' +
-    rows.map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n')
-
-  // 创建Blob并下载
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
   const link = document.createElement('a')
-  link.href = URL.createObjectURL(blob)
-  link.download = `${templateName}_${formatTodayDate()}.csv`
+  link.href = '/模版.xlsx'
+  link.download = '导入模版.xlsx'
   link.click()
-  URL.revokeObjectURL(link.href)
 }
 
 // 查看导入历史
 const handleViewHistory = () => {
   historyDialogVisible.value = true
+  historyPagination.currentPage = 1
+  loadHistoryData()
 }
 
-// 上传成功
-const handleUploadSuccess: UploadProps['onSuccess'] = () => {
-  ElMessage.success('数据导入成功')
-  importDialogVisible.value = false
+// 自定义上传方法
+const handleCustomUpload = async (options: UploadRequestOptions) => {
+  const formData = new FormData()
+  formData.append('file', options.file)
+  formData.append('typeId', String(activeType.value))
+  formData.append('type', String(getCurrentType()))
+
+  try {
+    const res = (await uploadCustomerApi(formData)) as any
+    if (res.code === 200 && res.message !== '任务不存在') {
+      ElMessage.success('数据导入成功')
+      importDialogVisible.value = false
+      loadTableData()
+    } else {
+      ElMessage.error(res.message || res.data?.message || '导入失败')
+    }
+  } catch (error) {
+    console.error('上传失败:', error)
+    ElMessage.error('上传失败，请重试')
+  }
 }
 
 // 获取状态标签类型
@@ -363,44 +222,34 @@ const tableRowClassName = ({ rowIndex }: { rowIndex: number }) => {
   return rowIndex % 2 === 0 ? 'even-row' : 'odd-row'
 }
 
-// 主表格总数
-const tableTotal = computed(() => tableData.value.length)
+// 主表格总数（使用后端返回的total）
+const tableTotal = computed(() => tablePagination.total)
 
 // 导入历史总数
-const historyTotal = computed(() => historyData.value.length)
-
-// 分页后的主表格数据
-const paginatedTableData = computed(() => {
-  const start = (tablePagination.currentPage - 1) * tablePagination.pageSize
-  const end = start + tablePagination.pageSize
-  return tableData.value.slice(start, end)
-})
-
-// 分页后的导入历史数据
-const paginatedHistoryData = computed(() => {
-  const start = (historyPagination.currentPage - 1) * historyPagination.pageSize
-  const end = start + historyPagination.pageSize
-  return historyData.value.slice(start, end)
-})
+const historyTotal = computed(() => historyPagination.total)
 
 // 主表格分页变化
 const handleTablePageChange = (page: number) => {
   tablePagination.currentPage = page
+  loadTableData()
 }
 
 const handleTableSizeChange = (size: number) => {
   tablePagination.pageSize = size
   tablePagination.currentPage = 1
+  loadTableData()
 }
 
 // 导入历史分页变化
 const handleHistoryPageChange = (page: number) => {
   historyPagination.currentPage = page
+  loadHistoryData()
 }
 
 const handleHistorySizeChange = (size: number) => {
   historyPagination.pageSize = size
   historyPagination.currentPage = 1
+  loadHistoryData()
 }
 </script>
 
@@ -423,16 +272,18 @@ const handleHistorySizeChange = (size: number) => {
         <template v-else>
           <div
             v-for="item in importTypes"
-            :key="item.id"
+            :key="item.typeId"
             :class="[
               'flex items-center gap-8px px-14px py-12px rounded-8px cursor-pointer transition-all duration-200 mb-8px last:mb-0',
-              activeType === item.id
+              activeType === item.typeId
                 ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
                 : 'bg-gray-50 text-gray-700 hover:bg-blue-50 hover:text-blue-600'
             ]"
-            @click="handleTypeChange(item.id)"
+            @click="handleTypeChange(item.typeId)"
           >
-            <span class="text-13px font-500 whitespace-nowrap">{{ item.name }}</span>
+            <span class="text-13px font-500 whitespace-normal break-words leading-tight">{{
+              item.name
+            }}</span>
           </div>
         </template>
       </div>
@@ -484,7 +335,7 @@ const handleHistorySizeChange = (size: number) => {
       >
         <ElTable
           v-loading="tableLoading"
-          :data="paginatedTableData"
+          :data="tableData"
           style="width: 100%"
           class="flex-1 custom-table"
           :row-class-name="tableRowClassName"
@@ -499,17 +350,7 @@ const handleHistorySizeChange = (size: number) => {
               <span class="text-gray-600">{{ row.age }}岁</span>
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="appointmentTime" label="预约时间" min-width="150" align="center">
-            <template #default="{ row }">
-              <span class="text-gray-600">{{ row.appointmentTime }}</span>
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="recordNo" label="病历号" min-width="140" align="center">
-            <template #default="{ row }">
-              <span class="text-blue-600 font-500">{{ row.recordNo }}</span>
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="phone" label="手机" min-width="120" align="center">
+          <ElTableColumn prop="phone" label="手机" min-width="130" align="center">
             <template #default="{ row }">
               <span class="text-gray-600">{{ row.phone }}</span>
             </template>
@@ -519,9 +360,9 @@ const handleHistorySizeChange = (size: number) => {
               <span class="text-gray-600">{{ row.birthDate }}</span>
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="duration" label="预约时长" min-width="90" align="center">
+          <ElTableColumn prop="assignTime" label="预约时间" min-width="160" align="center">
             <template #default="{ row }">
-              <ElTag type="info" size="small" effect="light" round>{{ row.duration }}</ElTag>
+              <span class="text-gray-600">{{ row.assignTime }}</span>
             </template>
           </ElTableColumn>
           <ElTableColumn prop="doctor" label="预约医生" min-width="100" align="center">
@@ -529,11 +370,16 @@ const handleHistorySizeChange = (size: number) => {
               <span class="text-gray-700 font-500">{{ row.doctor }}</span>
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="visitStatus" label="就诊状态" min-width="100" align="center">
+          <ElTableColumn prop="status" label="就诊状态" min-width="100" align="center">
             <template #default="{ row }">
-              <ElTag :type="getStatusTagType(row.visitStatus)" size="small" effect="light" round>
-                {{ row.visitStatus }}
+              <ElTag :type="getStatusTagType(row.status)" size="small" effect="light" round>
+                {{ row.status }}
               </ElTag>
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="plan" label="计划" min-width="100" align="center">
+            <template #default="{ row }">
+              <span class="text-blue-600 font-500">{{ row.plan }}</span>
             </template>
           </ElTableColumn>
           <ElTableColumn prop="creator" label="创建人" min-width="90" align="center">
@@ -541,19 +387,7 @@ const handleHistorySizeChange = (size: number) => {
               <span class="text-gray-600">{{ row.creator }}</span>
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="visitType" label="就诊类型" min-width="90" align="center">
-            <template #default="{ row }">
-              <ElTag
-                :type="row.visitType === '初诊' ? 'success' : 'warning'"
-                size="small"
-                effect="light"
-                round
-              >
-                {{ row.visitType }}
-              </ElTag>
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="createTime" label="创建时间" min-width="150" align="center">
+          <ElTableColumn prop="createTime" label="创建时间" min-width="160" align="center">
             <template #default="{ row }">
               <span class="text-gray-500 text-12px">{{ row.createTime }}</span>
             </template>
@@ -586,10 +420,10 @@ const handleHistorySizeChange = (size: number) => {
         <ElUpload
           class="upload-area"
           drag
-          action="/api/upload"
+          :auto-upload="true"
+          :http-request="handleCustomUpload"
           accept=".xlsx,.xls"
-          :on-success="handleUploadSuccess"
-          :limit="1"
+          :show-file-list="false"
         >
           <div class="py-40px">
             <Icon icon="ep:upload-filled" class="text-48px text-blue-400 mb-12px" />
@@ -606,16 +440,11 @@ const handleHistorySizeChange = (size: number) => {
 
     <!-- 导入历史弹窗 -->
     <ElDialog v-model="historyDialogVisible" title="导入历史" width="800px">
-      <ElTable
-        v-loading="historyLoading"
-        :data="paginatedHistoryData"
-        style="width: 100%"
-        max-height="300"
-      >
-        <ElTableColumn prop="date" label="导入日期" min-width="140" />
+      <ElTable v-loading="historyLoading" :data="historyData" style="width: 100%" max-height="300">
+        <ElTableColumn prop="createTime" label="导入日期" min-width="160" />
         <ElTableColumn prop="count" label="导入数量" min-width="100" />
-        <ElTableColumn prop="category" label="导入类目" min-width="140" />
-        <ElTableColumn prop="result" label="执行情况" min-width="200" />
+        <ElTableColumn prop="item" label="导入类目" min-width="140" />
+        <ElTableColumn prop="desc" label="执行情况" min-width="200" />
       </ElTable>
       <!-- 分页器 -->
       <div class="flex justify-end pt-16px">
@@ -640,9 +469,12 @@ const handleHistorySizeChange = (size: number) => {
   overflow: hidden;
 }
 
-/* 左侧边栏固定高度 */
+/* 左侧边栏宽度和高度 */
 .left-sidebar {
+  width: auto;
   height: 100%;
+  max-width: 200px;
+  min-width: 160px;
 }
 
 /* 左侧菜单填充高度 */

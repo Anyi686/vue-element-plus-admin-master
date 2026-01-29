@@ -16,221 +16,139 @@ import {
   ElSkeleton,
   ElSkeletonItem,
   ElCheckboxGroup,
-  ElCheckbox
+  ElCheckbox,
+  ElTimeSelect
 } from 'element-plus'
 import { Icon } from '@/components/Icon'
-
-// 计划类型接口类型定义
-interface PlanType {
-  id: number
-  name: string
-  key: string
-  showTaskList: boolean // true: 显示任务列表页, false: 直接显示计划详情页
-}
+import {
+  getSopTemplatesApi,
+  getSopTasksApi,
+  getSopArrangesApi,
+  addTaskApi,
+  updateTaskStatusApi,
+  deleteTaskApi,
+  addArrangeApi,
+  updateArrangeStatusApi,
+  deleteArrangeApi
+} from '@/api/dataUpload'
+import type { SopTemplateType, SopTaskType } from '@/api/dataUpload/types'
 
 // 左侧计划类型列表
-const planTypes = ref<PlanType[]>([])
+const planTypes = ref<SopTemplateType[]>([])
 
 // 菜单加载状态
 const menuLoading = ref(false)
 
-// 模拟获取计划类型接口
-const fetchPlanTypes = (): Promise<PlanType[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { id: 1, name: '新患者开发导入', key: 'newPatient', showTaskList: false },
-        { id: 2, name: '老患者预约导入', key: 'oldPatient', showTaskList: false },
-        { id: 3, name: '预约导入', key: 'appointment', showTaskList: false },
-        { id: 4, name: '患者sop全年计划导入', key: 'sopPlan', showTaskList: true },
-        { id: 5, name: '五个定期计划', key: 'regularPlan', showTaskList: true },
-        { id: 6, name: 'PMTC预防会员导入', key: 'pmtcMember', showTaskList: true },
-        { id: 7, name: '自定义跟进计划', key: 'customPlan', showTaskList: true }
-      ])
-    }, 500)
-  })
-}
-
-// 判断当前类型是否显示任务列表
+// 判断当前类型是否显示任务列表（type为1显示任务列表）
 const isShowTaskList = computed(() => {
-  const currentType = planTypes.value.find((item) => item.key === activePlanType.value)
-  return currentType?.showTaskList || false
+  const currentType = planTypes.value.find((item) => item.typeId === activePlanType.value)
+  return currentType?.type === 1
 })
 
 // 加载计划类型数据
 const loadPlanTypes = async () => {
   menuLoading.value = true
   try {
-    const data = await fetchPlanTypes()
-    planTypes.value = data
-    if (data.length > 0) {
-      activePlanType.value = data[0].key
+    const res = await getSopTemplatesApi()
+    if (res.code === 200) {
+      planTypes.value = res.data.list || []
+      if (planTypes.value.length > 0) {
+        const firstItem = planTypes.value[0]
+        activePlanType.value = firstItem.typeId
+        // 根据菜单type类型加载不同数据
+        if (firstItem.type === 1) {
+          // type=1: 加载任务列表
+          loadTaskList(firstItem.typeId)
+        } else {
+          // type=2: 加载计划列表
+          loadPlanList(firstItem.typeId)
+        }
+      }
     }
+  } catch (error) {
+    console.error('加载菜单失败:', error)
+    ElMessage.error('加载菜单失败')
   } finally {
     menuLoading.value = false
   }
 }
 
 // 当前选中的计划类型
-const activePlanType = ref('')
+const activePlanType = ref(0)
 
 // 初始化加载
 onMounted(() => {
   loadPlanTypes()
 })
 
-// 各计划类型对应的数据
-const planDataMap = ref<Record<string, any[]>>({
-  newPatient: [
-    {
-      id: 1,
-      marketingDays: 1,
-      scriptContent: `例：您之前在我们这儿做了那个种植牙，回去这段时间感觉怎么样？"
-客户回应处理：
-如果客户表示有问题。则可以恰当时间告知患者，"我跟医生反馈一下，然后给您回复"，并结束通话
-如果客户没问题，则主要引导到店进行治疗后的维护保养
-流程3：强调维护保养重要性
--目标：描述维护保养的重要性+邀约患者到店进行维护保养
--提示词：
-例：恩，郭院长让我给您联系安排一次种植牙维护，这个种植牙要是想长久使用的话肯定是要做定期维护的，毕竟咱们花了那么多钱把这个牙种上了，也是想着说用得越久越好，您说是吧?
-客户回应处理：是的
-流程4：邀约到店
-恩，郭院长专门给您安排的。可以先来免费做这个种植牙的维护，我要不帮咱们约个时间，来做个这个免费的种植牙维护?
-客户回应处理：好的
-行好，约什么时间您方便过来？"
-客户回应处理：
---如果客户表示同意，则告诉客户，确认一下医生时间，给客户回复
-如果客户首次--不同意，则将以下话术优化后回答
-"行呀，那过段时间我再联系您，，不过这个一定要尽早哈，定期维护也能延长这个牙齿的使用寿命，就像咱们这个汽车一样，也需要做一做这个定期保养一样"
-流程5：引导客户加微
--目标：以微信上给客户发送维护保养的方式方法以及以后可以通过微信来预约
--提示词：
---不同意，那这个电话号是您的微信号不？我一会儿加上您的微信，您通过一下哈，到时候您也可以通过微信跟我预约到店的时间哈，最主要的是门诊有什么最新信息我也可以第一时间发送给您哈
-流程6：确认客户信息
--目标：如果是邀请客户加微信，必须先确认"这个手机号是您的微信号吗"
--提示词：`,
-      taskDetail: '',
-      enabled: true
-    },
-    { id: 2, marketingDays: 3, scriptContent: '', taskDetail: '', enabled: false },
-    { id: 3, marketingDays: 7, scriptContent: '', taskDetail: '', enabled: false }
-  ],
-  oldPatient: [
-    {
-      id: 1,
-      marketingDays: 1,
-      scriptContent: '您好，我是XX口腔的客服，之前您在我们这边做过治疗，想回访一下您的恢复情况...',
-      taskDetail: '回访老患者',
-      enabled: true
-    },
-    {
-      id: 2,
-      marketingDays: 7,
-      scriptContent: '您好，上次回访后想了解一下您现在的情况，是否需要来店复查...',
-      taskDetail: '二次回访',
-      enabled: false
-    }
-  ],
-  appointment: [
-    {
-      id: 1,
-      marketingDays: 1,
-      scriptContent: '您好，提醒您明天有预约，请按时到店...',
-      taskDetail: '预约提醒',
-      enabled: true
-    }
-  ],
-  sopPlan: [],
-  regularPlan: [],
-  pmtcMember: [],
-  customPlan: []
-})
+// 各计划类型对应的数据（key为typeId）
+const planDataMap = ref<Record<string | number, any[]>>({})
 
-// 任务列表接口类型定义
-interface TaskItem {
-  id: number
-  taskName: string
-  planCycle: number
-  taskCount: number
+// 任务列表接口类型定义（扩展API类型）
+interface TaskItem extends SopTaskType {
   symptoms: string[]
   enabled: boolean
-  executeTimeRange: string // 执行时间范围，如 "09:00-18:00"
 }
 
-// 各计划类型对应的任务列表数据
-const taskListMap = ref<Record<string, TaskItem[]>>({
-  sopPlan: [
-    {
-      id: 1,
-      taskName: '拔牙术后',
-      planCycle: 360,
-      taskCount: 4,
-      symptoms: [],
-      enabled: true,
-      executeTimeRange: '09:00-18:00'
-    },
-    {
-      id: 2,
-      taskName: '洁牙术后',
-      planCycle: 180,
-      taskCount: 3,
-      symptoms: [],
-      enabled: false,
-      executeTimeRange: '10:00-17:00'
-    },
-    {
-      id: 3,
-      taskName: '补牙术后',
-      planCycle: 90,
-      taskCount: 2,
-      symptoms: [],
-      enabled: true,
-      executeTimeRange: '14:00-20:00'
+// 各计划类型对应的任务列表数据（key为typeId）
+const taskListMap = ref<Record<string | number, TaskItem[]>>({})
+
+// 任务列表加载状态
+const taskLoading = ref(false)
+
+// 计划列表加载状态
+const planLoading = ref(false)
+
+// 加载任务列表数据 (type=1)
+const loadTaskList = async (groupId: number) => {
+  taskLoading.value = true
+  try {
+    const res = await getSopTasksApi({ groupId })
+    if (res.code === 200) {
+      // 将API返回的数据转换为TaskItem格式
+      const tasks: TaskItem[] = (res.data.list || []).map((item: SopTaskType) => ({
+        ...item,
+        symptoms: [],
+        enabled: item.status === 1
+      }))
+      taskListMap.value[groupId] = tasks
     }
-  ],
-  regularPlan: [
-    {
-      id: 1,
-      taskName: '定期洁牙提醒',
-      planCycle: 180,
-      taskCount: 2,
-      symptoms: [],
-      enabled: true,
-      executeTimeRange: '09:00-12:00'
-    },
-    {
-      id: 2,
-      taskName: '定期复查提醒',
-      planCycle: 365,
-      taskCount: 4,
-      symptoms: [],
-      enabled: true,
-      executeTimeRange: '14:00-18:00'
+  } catch (error) {
+    console.error('加载任务列表失败:', error)
+    ElMessage.error('加载任务列表失败')
+  } finally {
+    taskLoading.value = false
+  }
+}
+
+// 加载计划列表数据 (type=2)
+const loadPlanList = async (taskId: number) => {
+  planLoading.value = true
+  try {
+    const res = await getSopArrangesApi({
+      taskId,
+      page: pagination.currentPage,
+      size: pagination.pageSize
+    })
+    if (res.code === 200) {
+      // 将API返回的数据转换为计划列表格式
+      const plans = (res.data.list || []).map((item: any) => ({
+        ...item,
+        enabled: item.status === 1
+      }))
+      // 根据是否从任务列表进入，使用不同的key
+      const dataKey =
+        isShowTaskList.value && currentTaskId.value ? `${activePlanType.value}_${taskId}` : taskId
+      planDataMap.value[dataKey] = plans
+      pagination.total = res.data.total || 0
     }
-  ],
-  pmtcMember: [
-    {
-      id: 1,
-      taskName: 'PMTC会员回访',
-      planCycle: 30,
-      taskCount: 3,
-      symptoms: [],
-      enabled: true,
-      executeTimeRange: '10:00-16:00'
-    }
-  ],
-  customPlan: [
-    {
-      id: 1,
-      taskName: '自定义跟进任务1',
-      planCycle: 60,
-      taskCount: 2,
-      symptoms: [],
-      enabled: false,
-      executeTimeRange: '09:00-19:00'
-    }
-  ]
-})
+  } catch (error) {
+    console.error('加载计划列表失败:', error)
+    ElMessage.error('加载计划列表失败')
+  } finally {
+    planLoading.value = false
+  }
+}
 
 // 当前任务列表数据
 const currentTaskList = computed(() => {
@@ -263,7 +181,7 @@ const showPlanDetail = ref(false)
 const currentTaskName = computed(() => {
   if (!currentTaskId.value) return ''
   const task = currentTaskList.value.find((item) => item.id === currentTaskId.value)
-  return task?.taskName || ''
+  return task?.name || ''
 })
 
 // 症状选项
@@ -281,13 +199,6 @@ const symptomDialogVisible = ref(false)
 const editingTaskId = ref<number | null>(null)
 const selectedSymptoms = ref<string[]>([])
 
-// 打开症状选择弹窗
-const handleOpenSymptomDialog = (task: TaskItem) => {
-  editingTaskId.value = task.id
-  selectedSymptoms.value = [...task.symptoms]
-  symptomDialogVisible.value = true
-}
-
 // 保存症状选择
 const handleSaveSymptoms = () => {
   const taskList = taskListMap.value[activePlanType.value]
@@ -297,17 +208,6 @@ const handleSaveSymptoms = () => {
     ElMessage.success('症状保存成功')
   }
   symptomDialogVisible.value = false
-}
-
-// 点击添加计划，进入计划详情页
-const handleEnterPlanDetail = (task: TaskItem) => {
-  currentTaskId.value = task.id
-  showPlanDetail.value = true
-  // 初始化该任务的计划数据（如果没有的话）
-  const planKey = `${activePlanType.value}_${task.id}`
-  if (!planDataMap.value[planKey]) {
-    planDataMap.value[planKey] = []
-  }
 }
 
 // 返回任务列表
@@ -325,59 +225,97 @@ const currentPlanKey = computed(() => {
 })
 
 // 任务状态切换
-const handleTaskStatusChange = (task: TaskItem) => {
-  const status = task.enabled ? '开启' : '关闭'
-  ElMessage.success(`已${status}该任务`)
+const handleTaskStatusChange = async (task: TaskItem) => {
+  try {
+    const res = await updateTaskStatusApi({ id: task.id, status: task.enabled })
+    if (res.code === 200) {
+      const status = task.enabled ? '开启' : '关闭'
+      ElMessage.success(`已${status}该任务`)
+    } else {
+      // 回滚状态
+      task.enabled = !task.enabled
+      ElMessage.error((res as any).message || '操作失败')
+    }
+  } catch (error) {
+    task.enabled = !task.enabled
+    ElMessage.error('操作失败')
+  }
 }
 
 // 删除任务
-const handleDeleteTask = (_task: TaskItem, index: number) => {
+const handleDeleteTask = (task: TaskItem, _index: number) => {
   ElMessageBox.confirm('确定要删除该任务吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
   })
-    .then(() => {
-      const taskList = taskListMap.value[activePlanType.value]
-      taskList.splice(index, 1)
-      ElMessage.success('删除成功')
+    .then(async () => {
+      try {
+        const res = await deleteTaskApi(task.id)
+        if (res.code === 200) {
+          ElMessage.success('删除成功')
+          loadTaskList(activePlanType.value)
+        } else {
+          ElMessage.error((res as any).message || '删除失败')
+        }
+      } catch (error) {
+        ElMessage.error('删除失败')
+      }
     })
     .catch(() => {})
+}
+
+// 为任务添加计划（进入计划详情页面）
+const handleAddPlanForTask = (task: TaskItem) => {
+  currentTaskId.value = task.id
+  showPlanDetail.value = true
+  pagination.currentPage = 1
+  // 加载该任务的计划列表
+  loadPlanList(task.id)
 }
 
 // 添加任务弹窗
 const addTaskDialogVisible = ref(false)
 const addTaskForm = reactive({
-  taskName: '',
-  planCycle: 30
+  name: '',
+  timeStart: '09:00',
+  timeEnd: '18:00',
+  status: true
 })
 
 // 打开添加任务弹窗
 const handleOpenAddTaskDialog = () => {
-  addTaskForm.taskName = ''
-  addTaskForm.planCycle = 30
+  addTaskForm.name = ''
+  addTaskForm.timeStart = '09:00'
+  addTaskForm.timeEnd = '18:00'
+  addTaskForm.status = true
   addTaskDialogVisible.value = true
 }
 
 // 保存新任务
-const handleSaveNewTask = () => {
-  if (!addTaskForm.taskName.trim()) {
+const handleSaveNewTask = async () => {
+  if (!addTaskForm.name.trim()) {
     ElMessage.warning('请输入任务名称')
     return
   }
-  const taskList = taskListMap.value[activePlanType.value]
-  const maxId = taskList.length > 0 ? Math.max(...taskList.map((item) => item.id)) : 0
-  taskList.push({
-    id: maxId + 1,
-    taskName: addTaskForm.taskName,
-    planCycle: addTaskForm.planCycle,
-    taskCount: 0,
-    symptoms: [],
-    enabled: false,
-    executeTimeRange: '09:00-18:00'
-  })
-  ElMessage.success('添加成功')
-  addTaskDialogVisible.value = false
+  try {
+    const res = await addTaskApi({
+      groupId: activePlanType.value,
+      name: addTaskForm.name,
+      timeStart: addTaskForm.timeStart,
+      timeEnd: addTaskForm.timeEnd,
+      status: addTaskForm.status
+    })
+    if (res.code === 200) {
+      ElMessage.success('添加成功')
+      addTaskDialogVisible.value = false
+      loadTaskList(activePlanType.value)
+    } else {
+      ElMessage.error((res as any).message || '添加失败')
+    }
+  } catch (error) {
+    ElMessage.error('添加失败')
+  }
 }
 
 // 任务列表分页变化
@@ -404,57 +342,109 @@ const currentPlanData = computed(() => {
 
 // 分页后的数据
 const paginatedData = computed(() => {
+  // type=2时数据已从API分页返回，直接使用
+  if (!isShowTaskList.value) {
+    return currentPlanData.value
+  }
+  // type=1进入计划详情时，使用本地分页
   const start = (pagination.currentPage - 1) * pagination.pageSize
   const end = start + pagination.pageSize
   return currentPlanData.value.slice(start, end)
 })
 
 // 数据总数
-const totalCount = computed(() => currentPlanData.value.length)
+const totalCount = computed(() => {
+  // type=2时使用API返回的total
+  if (!isShowTaskList.value) {
+    return pagination.total
+  }
+  return currentPlanData.value.length
+})
 
 // 获取当前计划类型名称
 const currentPlanTypeName = computed(() => {
-  const found = planTypes.value.find((item) => item.key === activePlanType.value)
+  const found = planTypes.value.find((item) => item.typeId === activePlanType.value)
   return found?.name || ''
 })
 
 // 切换计划类型
-const handlePlanTypeClick = (key: string) => {
-  activePlanType.value = key
+const handlePlanTypeClick = (typeId: number) => {
+  activePlanType.value = typeId
   pagination.currentPage = 1
   taskPagination.currentPage = 1
   // 重置任务详情状态
   showPlanDetail.value = false
   currentTaskId.value = null
+
+  // 根据菜单type类型调用不同接口
+  const currentType = planTypes.value.find((item) => item.typeId === typeId)
+  if (currentType?.type === 1) {
+    // type=1: 加载任务列表，groupId使用typeId
+    if (!taskListMap.value[typeId]) {
+      loadTaskList(typeId)
+    }
+  } else {
+    // type=2: 加载计划列表，taskId使用typeId
+    loadPlanList(typeId)
+  }
 }
 
 // 分页变化
 const handlePageChange = (page: number) => {
   pagination.currentPage = page
+  // type=2时重新加载计划数据
+  if (!isShowTaskList.value) {
+    loadPlanList(activePlanType.value)
+  }
 }
 
 const handleSizeChange = (size: number) => {
   pagination.pageSize = size
   pagination.currentPage = 1
+  // type=2时重新加载计划数据
+  if (!isShowTaskList.value) {
+    loadPlanList(activePlanType.value)
+  }
 }
 
 // 状态切换
-const handleStatusChange = (row: any) => {
-  const status = row.enabled ? '开启' : '关闭'
-  ElMessage.success(`已${status}该计划`)
+const handleStatusChange = async (row: any) => {
+  try {
+    const res = await updateArrangeStatusApi({ arrangeId: row.id, status: row.enabled })
+    if (res.code === 200) {
+      const status = row.enabled ? '开启' : '关闭'
+      ElMessage.success(`已${status}该计划`)
+    } else {
+      row.enabled = !row.enabled
+      ElMessage.error((res as any).message || '操作失败')
+    }
+  } catch (error) {
+    row.enabled = !row.enabled
+    ElMessage.error('操作失败')
+  }
 }
 
 // 删除计划
-const handleDelete = (_row: any, index: number) => {
+const handleDelete = (row: any, _index: number) => {
   ElMessageBox.confirm('确定要删除该计划吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
   })
-    .then(() => {
-      const currentData = planDataMap.value[currentPlanKey.value]
-      currentData.splice(index, 1)
-      ElMessage.success('删除成功')
+    .then(async () => {
+      try {
+        const res = await deleteArrangeApi(row.id)
+        if (res.code === 200) {
+          ElMessage.success('删除成功')
+          // 重新加载计划列表
+          const taskId = isShowTaskList.value ? currentTaskId.value! : activePlanType.value
+          loadPlanList(taskId)
+        } else {
+          ElMessage.error((res as any).message || '删除失败')
+        }
+      } catch (error) {
+        ElMessage.error('删除失败')
+      }
     })
     .catch(() => {})
 }
@@ -536,43 +526,31 @@ const handleOpenAddDialog = () => {
 }
 
 // 保存新计划
-const handleSaveNewPlan = () => {
+const handleSaveNewPlan = async () => {
   if (!addForm.scriptContent.trim()) {
     ElMessage.warning('请输入话术内容')
     return
   }
 
-  // 确保目标数组存在
-  if (!planDataMap.value[currentPlanKey.value]) {
-    planDataMap.value[currentPlanKey.value] = []
-  }
+  const taskId = isShowTaskList.value ? currentTaskId.value! : activePlanType.value
 
-  const targetData = planDataMap.value[currentPlanKey.value]
-  const maxId = targetData.length > 0 ? Math.max(...targetData.map((item) => item.id)) : 0
-
-  const newPlan = {
-    id: maxId + 1,
-    marketingDays: addForm.marketingDays,
-    scriptContent: addForm.scriptContent,
-    taskDetail: '',
-    enabled: false
-  }
-
-  targetData.push(newPlan)
-
-  // 更新任务的计划条数
-  if (isShowTaskList.value && currentTaskId.value) {
-    const task = currentTaskList.value.find((item) => item.id === currentTaskId.value)
-    if (task) {
-      task.taskCount = targetData.length
+  try {
+    const res = await addArrangeApi(taskId, {
+      taskId,
+      status: false,
+      notice: addForm.scriptContent,
+      days: addForm.marketingDays
+    })
+    if (res.code === 200) {
+      ElMessage.success('添加成功')
+      addDialogVisible.value = false
+      loadPlanList(taskId)
+    } else {
+      ElMessage.error((res as any).message || '添加失败')
     }
+  } catch (error) {
+    ElMessage.error('添加失败')
   }
-
-  const totalPages = Math.ceil(targetData.length / pagination.pageSize)
-  pagination.currentPage = totalPages
-
-  ElMessage.success('添加成功')
-  addDialogVisible.value = false
 }
 </script>
 
@@ -595,16 +573,18 @@ const handleSaveNewPlan = () => {
         <template v-else>
           <div
             v-for="item in planTypes"
-            :key="item.id"
+            :key="item.typeId"
             :class="[
               'flex items-center gap-8px px-14px py-12px rounded-8px cursor-pointer transition-all duration-200 mb-8px last:mb-0',
-              activePlanType === item.key
+              activePlanType === item.typeId
                 ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
                 : 'bg-gray-50 text-gray-700 hover:bg-blue-50 hover:text-blue-600'
             ]"
-            @click="handlePlanTypeClick(item.key)"
+            @click="handlePlanTypeClick(item.typeId)"
           >
-            <span class="text-13px font-500 whitespace-nowrap">{{ item.name }}</span>
+            <span class="text-13px font-500 whitespace-normal break-words leading-tight">{{
+              item.name
+            }}</span>
           </div>
         </template>
       </div>
@@ -631,6 +611,7 @@ const handleSaveNewPlan = () => {
           class="table-wrapper flex-1 bg-white rounded-16px shadow-sm overflow-hidden flex flex-col"
         >
           <ElTable
+            v-loading="taskLoading"
             :data="paginatedTaskList"
             style="width: 100%"
             class="flex-1 custom-table"
@@ -648,7 +629,7 @@ const handleSaveNewPlan = () => {
               <template #default="{ row }">
                 <ElInput
                   v-if="isTaskEditing(row, 'taskName')"
-                  v-model="row.taskName"
+                  v-model="row.name"
                   class="task-edit-input"
                   @blur="handleTaskEditFinish"
                   @keyup.enter="handleTaskEditFinish"
@@ -658,7 +639,7 @@ const handleSaveNewPlan = () => {
                   class="font-500 text-gray-800 cursor-pointer editable-cell"
                   @dblclick="handleTaskCellDblClick(row, 'taskName')"
                 >
-                  {{ row.taskName }}
+                  {{ row.name }}
                 </span>
               </template>
             </ElTableColumn>
@@ -666,31 +647,17 @@ const handleSaveNewPlan = () => {
             <ElTableColumn prop="planInfo" label="沟通计划" min-width="150" align="center">
               <template #default="{ row }">
                 <div class="flex flex-col items-center gap-4px">
-                  <span class="text-gray-600">计划周期：{{ row.planCycle }}</span>
-                  <span class="text-gray-600">任务条数：{{ row.taskCount }}</span>
+                  <span class="text-gray-600">计划周期：{{ row.days }}</span>
+                  <span class="text-gray-600">任务条数：{{ row.count }}</span>
                 </div>
               </template>
             </ElTableColumn>
 
             <ElTableColumn prop="executeTimeRange" label="执行时间" min-width="140" align="center">
               <template #default="{ row }">
-                <span class="execute-time-tag">{{ row.executeTimeRange }}</span>
-              </template>
-            </ElTableColumn>
-
-            <ElTableColumn label="添加计划" min-width="120" align="center">
-              <template #default="{ row }">
-                <ElButton type="primary" size="small" @click="handleEnterPlanDetail(row)">
-                  添加计划
-                </ElButton>
-              </template>
-            </ElTableColumn>
-
-            <ElTableColumn label="对应症状" min-width="120" align="center">
-              <template #default="{ row }">
-                <ElButton type="primary" size="small" @click="handleOpenSymptomDialog(row)">
-                  选择症状
-                </ElButton>
+                <span class="execute-time-tag"
+                  >{{ row.timeStart || '09:00' }}-{{ row.timeEnd || '18:00' }}</span
+                >
               </template>
             </ElTableColumn>
 
@@ -707,11 +674,16 @@ const handleSaveNewPlan = () => {
               </template>
             </ElTableColumn>
 
-            <ElTableColumn label="操作" min-width="100" align="center">
+            <ElTableColumn label="操作" min-width="180" align="center">
               <template #default="{ row, $index }">
-                <ElButton type="danger" size="small" text @click="handleDeleteTask(row, $index)">
-                  删除
-                </ElButton>
+                <div class="flex items-center justify-center gap-8px">
+                  <ElButton type="primary" size="small" @click="handleAddPlanForTask(row)">
+                    添加计划
+                  </ElButton>
+                  <ElButton type="danger" size="small" text @click="handleDeleteTask(row, $index)">
+                    删除
+                  </ElButton>
+                </div>
               </template>
             </ElTableColumn>
           </ElTable>
@@ -762,6 +734,7 @@ const handleSaveNewPlan = () => {
           class="table-wrapper flex-1 bg-white rounded-16px shadow-sm overflow-hidden flex flex-col"
         >
           <ElTable
+            v-loading="planLoading"
             :data="paginatedData"
             style="width: 100%"
             class="flex-1 custom-table"
@@ -775,12 +748,12 @@ const handleSaveNewPlan = () => {
               </template>
             </ElTableColumn>
 
-            <ElTableColumn prop="marketingDays" label="营销天数" min-width="160" align="center">
+            <ElTableColumn prop="days" label="营销天数" min-width="160" align="center">
               <template #default="{ row }">
                 <div class="flex items-center justify-center gap-4px">
                   <span class="text-gray-600 font-500">第</span>
                   <ElInputNumber
-                    v-model="row.marketingDays"
+                    v-model="row.days"
                     :min="1"
                     :max="365"
                     size="small"
@@ -793,11 +766,11 @@ const handleSaveNewPlan = () => {
               </template>
             </ElTableColumn>
 
-            <ElTableColumn prop="scriptContent" label="话术内容" min-width="400">
+            <ElTableColumn prop="notice" label="话术内容" min-width="400">
               <template #default="{ row }">
                 <ElInput
-                  v-if="isEditing(row, 'scriptContent')"
-                  v-model="row.scriptContent"
+                  v-if="isEditing(row, 'notice')"
+                  v-model="row.notice"
                   type="textarea"
                   :rows="8"
                   class="edit-textarea"
@@ -807,9 +780,9 @@ const handleSaveNewPlan = () => {
                 <div
                   v-else
                   class="script-content text-gray-700 text-13px leading-relaxed whitespace-pre-wrap cursor-pointer editable-cell"
-                  @dblclick="handleCellDblClick(row, 'scriptContent')"
+                  @dblclick="handleCellDblClick(row, 'notice')"
                 >
-                  {{ row.scriptContent || '-' }}
+                  {{ row.notice || '-' }}
                 </div>
               </template>
             </ElTableColumn>
@@ -897,18 +870,34 @@ const handleSaveNewPlan = () => {
     <ElDialog v-model="addTaskDialogVisible" title="添加任务" width="500px" destroy-on-close>
       <ElForm :model="addTaskForm" label-width="100px" class="add-plan-form">
         <ElFormItem label="任务名称">
-          <ElInput v-model="addTaskForm.taskName" placeholder="请输入任务名称" />
+          <ElInput v-model="addTaskForm.name" placeholder="请输入任务名称" />
         </ElFormItem>
-        <ElFormItem label="计划周期">
-          <div class="flex items-center gap-8px">
-            <ElInputNumber
-              v-model="addTaskForm.planCycle"
-              :min="1"
-              :max="365"
-              controls-position="right"
-            />
-            <span class="text-gray-600">天</span>
-          </div>
+        <ElFormItem label="开始时间">
+          <ElTimeSelect
+            v-model="addTaskForm.timeStart"
+            start="00:00"
+            step="00:30"
+            end="23:30"
+            placeholder="选择开始时间"
+          />
+        </ElFormItem>
+        <ElFormItem label="结束时间">
+          <ElTimeSelect
+            v-model="addTaskForm.timeEnd"
+            :min-time="addTaskForm.timeStart"
+            start="00:00"
+            step="00:30"
+            end="23:30"
+            placeholder="选择结束时间"
+          />
+        </ElFormItem>
+        <ElFormItem label="任务状态">
+          <ElSwitch
+            v-model="addTaskForm.status"
+            active-text="开启"
+            inactive-text="关闭"
+            inline-prompt
+          />
         </ElFormItem>
       </ElForm>
       <template #footer>
@@ -948,9 +937,12 @@ const handleSaveNewPlan = () => {
   overflow: hidden;
 }
 
-/* 左侧边栏固定高度 */
+/* 左侧边栏宽度和高度 */
 .left-sidebar {
+  width: auto;
   height: 100%;
+  max-width: 200px;
+  min-width: 160px;
 }
 
 /* 左侧菜单填充高度 */
