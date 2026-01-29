@@ -1,5 +1,5 @@
 import router from './router'
-import { useAppStoreWithOut } from '@/store/modules/app'
+// import { useAppStoreWithOut } from '@/store/modules/app'
 import type { RouteRecordRaw } from 'vue-router'
 import { useTitle } from '@/hooks/web/useTitle'
 import { useNProgress } from '@/hooks/web/useNProgress'
@@ -16,8 +16,14 @@ router.beforeEach(async (to, from, next) => {
   start()
   loadStart()
   const permissionStore = usePermissionStoreWithOut()
-  const appStore = useAppStoreWithOut()
   const userStore = useUserStoreWithOut()
+
+  console.log('Route navigation:', {
+    to: to.path,
+    from: from.path,
+    userInfo: !!userStore.getUserInfo
+  })
+
   if (userStore.getUserInfo) {
     if (to.path === '/login') {
       next({ path: '/' })
@@ -27,23 +33,18 @@ router.beforeEach(async (to, from, next) => {
         return
       }
 
-      // 开发者可根据实际情况进行修改
-      const roleRouters = userStore.getRoleRouters || []
+      console.log('Generating routes...')
+      // 使用静态路由
+      await permissionStore.generateRoutes('static')
 
-      // 是否使用动态路由
-      if (appStore.getDynamicRouter) {
-        appStore.serverDynamicRouter
-          ? await permissionStore.generateRoutes('server', roleRouters as AppCustomRouteRecordRaw[])
-          : await permissionStore.generateRoutes('frontEnd', roleRouters as string[])
-      } else {
-        await permissionStore.generateRoutes('static')
-      }
-
+      console.log('Adding routes:', permissionStore.getAddRouters)
       permissionStore.getAddRouters.forEach((route) => {
         router.addRoute(route as unknown as RouteRecordRaw) // 动态添加可访问路由表
       })
+
       const redirectPath = from.query.redirect || to.path
       const redirect = decodeURIComponent(redirectPath as string)
+      console.log('Redirecting to:', redirect)
       const nextData = to.path === redirect ? { ...to, replace: true } : { path: redirect }
       permissionStore.setIsAddRouters(true)
       next(nextData)

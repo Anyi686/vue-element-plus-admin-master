@@ -1,8 +1,13 @@
-# 环境
+# 用于构建生产版本
 VITE_NODE_ENV=production
 
 # 接口前缀
-VITE_API_BASE_PATH=
+VITE_API_BASE_PATH='/api'
+
+
+# 文件上传的地址
+VITE_UPLOAD_URL='/tel/customer/upload'
+
 
 # 打包路径
 VITE_BASE_PATH=/
@@ -20,22 +25,22 @@ VITE_SOURCEMAP=false
 VITE_OUT_DIR=dist-pro
 
 # 标题
-VITE_APP_TITLE=领克AI总后台
+VITE_APP_TITLE=瓴可AI管理系统
 
 # 是否包分析
-VITE_USE_BUNDLE_ANALYZER=true
+VITE_USE_BUNDLE_ANALYZER=false
 
 # 是否全量引入element-plus样式
 VITE_USE_ALL_ELEMENT_PLUS_STYLE=false
 
 # 是否开启mock
-VITE_USE_MOCK=true
+VITE_USE_MOCK=false
 
 # 是否切割css
 VITE_USE_CSS_SPLIT=true
 
 # 是否使用在线图标
-VITE_USE_ONLINE_ICON=false
+VITE_USE_ONLINE_ICON=true
 
 # 是否隐藏全局设置按钮
 VITE_HIDE_GLOBAL_SETTING=false

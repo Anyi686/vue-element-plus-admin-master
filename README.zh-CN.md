@@ -1,148 +1,105 @@
-<div align="center"> <a href="https://github.com/kailong321200875/vue-element-plus-admin"> <img width="100" src="./public/logo.png"> </a> <br> <br>
-
-[![license](https://img.shields.io/github/license/kailong321200875/vue-element-plus-admin.svg)](LICENSE) [![repo-size](https://img.shields.io/github/repo-size/kailong321200875/vue-element-plus-admin.svg)](repo-size) [![last-commit](https://img.shields.io/github/last-commit/kailong321200875/vue-element-plus-admin.svg)](last-commit) [![stars](https://img.shields.io/github/stars/kailong321200875/vue-element-plus-admin.svg)](stars) [![forks](https://img.shields.io/github/forks/kailong321200875/vue-element-plus-admin.svg)](forks) [![release](https://img.shields.io/github/release/kailong321200875/vue-element-plus-admin.svg)](release) [![watchers](https://img.shields.io/github/watchers/kailong321200875/vue-element-plus-admin.svg)](watchers)
-
-<h1>vue-element-plus-admin</h1>
+<div align="center">
+  <img width="100" src="./public/logo.png">
+  <br><br>
+  <h1>瓴可AI管理系统</h1>
 </div>
 
 [English](./README.md) | **中文**
 
 ## 介绍
 
-vue-element-plus-admin 是一个基于 `element-plus` 免费开源的中后台模版。使用了最新的`vue3`，`vite`，`TypeScript`等主流技术开发，开箱即用的中后台前端解决方案，可以用来作为项目的启动模版，也可用于学习参考。并且时刻关注着最新技术动向，尽可能的第一时间更新。
-
-vue-element-plus-admin 的定位是后台集成方案，不太适合当基础模板来进行二次开发。因为集成了很多你可能用不到的功能，会造成不少的代码冗余。如果你的项目不关注这方面的问题，也可以直接基于它进行二次开发。
-
-如需要基础模版，请切换到 `mini` 分支，`mini` 只简单集成了一些如：布局、动态菜单等常用布局功能，更适合开发者进行二次开发。
+瓴可AI管理系统是一个基于 `Vue3`、`Element Plus`、`TypeScript` 和 `Vite` 开发的智能外呼管理平台。为口腔诊所和医疗机构提供全面的患者管理、AI外呼计划配置和数据分析功能。
 
 ## 特性
 
-- **最新技术栈**：使用 Vue3/vite4 等前端前沿技术开发
-- **TypeScript**: 应用程序级 JavaScript 的语言
-- **主题**: 可配置的主题
-- **国际化**：内置完善的国际化方案
-- **自定义数据** 内置 Mock 数据方案
-- **权限** 内置完善的动态路由权限生成方案
-- **组件** 二次封装了多个常用的组件
-- **示例** 内置丰富的示例
+- **最新技术栈**：使用 Vue3、Vite6、TypeScript 和 Element Plus 构建
+- **患者管理**：完善的患者信息管理和跟踪功能
+- **AI外呼**：智能外呼计划配置和话术管理
+- **计划配置**：灵活的营销计划设置，支持自定义话术
+- **数据分析**：实时数据看板和统计分析
+- **短信集成**：内置短信通知系统
+- **用户管理**：基于角色的访问控制和用户管理
+- **国际化**：内置中英文国际化支持
+- **主题定制**：可配置的主题和布局
 
-## 预览
+## 主要模块
 
-- [vue-element-plus-admin](https://element-plus-admin.cn/) - 完整版 github 站点
-- [vue-element-plus-admin](https://kailong110120130.gitee.io/vue-element-plus-admin) - 完整版 gitee 站点
+- **今日数据** - 实时业务数据概览
+- **患者管理** - 患者信息增删改查
+- **计划设置** - AI外呼计划配置
+- **数据上传** - 批量数据导入功能
+- **短信设置** - 短信模板和通知管理
+- **系统设置** - 系统配置和偏好设置
 
-帐号：**admin/admin**
+## 技术栈
 
-在线例子默认不适用菜单过滤，而是直接使用静态路由表
+| 技术         | 版本   | 说明                   |
+| ------------ | ------ | ---------------------- |
+| Vue          | 3.5.13 | 渐进式 JavaScript 框架 |
+| Vite         | 6.0.7  | 下一代前端构建工具     |
+| Element Plus | 2.9.2  | 基于 Vue 3 的组件库    |
+| TypeScript   | 5.7.3  | JavaScript 的超集      |
+| Pinia        | 2.3.0  | 状态管理               |
+| Vue Router   | 4.5.0  | Vue.js 官方路由        |
+| UnoCSS       | 0.65.4 | 即时按需原子 CSS 引擎  |
+| Axios        | 1.7.9  | HTTP 客户端            |
 
-## 文档
+## 前置要求
 
-[文档地址 Github](https://element-plus-admin-doc.cn/)
+- [Node.js](http://nodejs.org/) >= 18.0.0
+- [pnpm](https://pnpm.io/) >= 8.1.0
+- [Git](https://git-scm.com/)
 
-[文档地址 Gitee](https://kailong110120130.gitee.io/vue-element-plus-admin-doc)
+## 仓库地址
 
-## 前序准备
+- **阿里云 Codeup**: <https://codeup.aliyun.com/6848f7a6455bbe90fa4f8f7c/TelSopPC.git>
 
-- [node](http://nodejs.org/) 和 [git](https://git-scm.com/) - 项目开发环境
-- [Vite](https://vitejs.dev/) - 熟悉 vite 特性
-- [Vue3](https://v3.vuejs.org/) - 熟悉 Vue 基础语法
-- [TypeScript](https://www.typescriptlang.org/) - 熟悉 `TypeScript` 基本语法
-- [Es6+](http://es6.ruanyifeng.com/) - 熟悉 es6 基本语法
-- [Vue-Router-Next](https://next.router.vuejs.org/) - 熟悉 vue-router 基本使用
-- [Element-Plus](https://element-plus.org/) - element-plus 基本使用
-- [Mock.js](https://github.com/nuysoft/Mock) - mockjs 基本语法
-
-## 安装和使用
-
-- 获取代码
+## 安装使用
 
 ```bash
-git clone https://github.com/kailong321200875/vue-element-plus-admin.git
-```
+# 克隆仓库
+git clone https://codeup.aliyun.com/6848f7a6455bbe90fa4f8f7c/TelSopPC.git
 
-- 安装依赖
+# 进入项目目录
+cd TelSopPC
 
-```bash
-cd vue-element-plus-admin
-
+# 安装依赖
 pnpm install
 
+# 启动开发服务器
+pnpm dev
+
+# 构建生产环境 (输出: dist-pro/)
+pnpm build:pro
+
+# 构建开发环境 (输出: dist-dev/)
+pnpm build:dev
+
+# 构建测试环境 (输出: dist-test/)
+pnpm build:test
 ```
 
-- 运行
+## 环境配置
 
-```bash
-pnpm run dev
-```
-
-- 打包
-
-```bash
-pnpm run build:pro
-```
-
-## 更新日志
-
-[更新日志](./CHANGELOG.md)
-
-## 如何贡献
-
-<a href="https://github.com/kailong321200875/vue-element-plus-admin/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=kailong321200875/vue-element-plus-admin" />
-</a>
-
-你可以[提一个 issue](https://github.com/kailong321200875/vue-element-plus-admin/issues/new) 或者提交一个 Pull Request。
-
-**Pull Request:**
-
-1. Fork 代码
-2. 创建自己的分支: `git checkout -b feat/xxxx`
-3. 提交你的修改: `git commit -am 'feat(function): add xxxxx'`
-4. 推送您的分支: `git push origin feat/xxxx`
-5. 提交 `pull request`
-
-## Git 贡献提交规范
-
-- `feat` 新功能
-- `fix` 修补 bug
-- `docs` 文档
-- `style` 格式、样式(不影响代码运行的变动)
-- `refactor` 重构(即不是新增功能，也不是修改 BUG 的代码)
-- `perf` 优化相关，比如提升性能、体验
-- `test` 添加测试
-- `build` 编译相关的修改，对项目构建或者依赖的改动
-- `ci` 持续集成修改
-- `chore` 构建过程或辅助工具的变动
-- `revert` 回滚到上一个版本
-- `workflow` 工作流改进
-- `mod` 不确定分类的修改
-- `wip` 开发中
-- `types` 类型
+| 文件        | 说明               |
+| ----------- | ------------------ |
+| `.env.base` | 所有环境的基础配置 |
+| `.env.dev`  | 开发环境配置       |
+| `.env.test` | 测试环境配置       |
+| `.env.pro`  | 生产环境配置       |
 
 ## 浏览器支持
 
-本地开发推荐使用 `Chrome 80+` 浏览器
+推荐使用 Chrome 80+ 浏览器
 
-支持现代浏览器, 不支持 IE
-
-| [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png" alt=" Edge" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>IE | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_48x48.png" alt=" Edge" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Edge | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png" alt="Firefox" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Firefox | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png" alt="Chrome" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Chrome | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/safari/safari_48x48.png" alt="Safari" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Safari |
-| :-: | :-: | :-: | :-: | :-: |
-| not support | last 2 versions | last 2 versions | last 2 versions | last 2 versions |
-
-## Donate
-
-如果你觉得这个项目有帮助，欢迎赞助以示支持~
-
-[Paypal Me](https://www.paypal.com/paypalme/ckl94)
-
-<img src="https://gitee.com/kailong110120130/my-image/raw/master/pay.jpg" />
-
-### 我的二维码
-
-如有项目合作或项目外包，扫码加我好友，请备注来意。
-
-<img src="https://gitee.com/kailong110120130/my-image/raw/master/me.jpg" />
+|   IE   |     Edge      |    Firefox    |    Chrome     |    Safari     |
+| :----: | :-----------: | :-----------: | :-----------: | :-----------: |
+| 不支持 | 最近 2 个版本 | 最近 2 个版本 | 最近 2 个版本 | 最近 2 个版本 |
 
 ## 许可证
 
 [MIT](./LICENSE)
+
+## 致谢
+
+本项目基于 [vue-element-plus-admin](https://github.com/kailong321200875/vue-element-plus-admin) 开发。

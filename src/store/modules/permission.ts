@@ -1,14 +1,8 @@
 import { defineStore } from 'pinia'
-import { asyncRouterMap, constantRouterMap } from '@/router'
-import {
-  generateRoutesByFrontEnd,
-  generateRoutesByServer,
-  flatMultiLevelRoutes
-} from '@/utils/routerHelper'
 import { store } from '../index'
-import { cloneDeep } from 'lodash-es'
+import { asyncRouterMap, constantRouterMap } from '@/router'
 
-export interface PermissionState {
+interface PermissionState {
   routers: AppRouteRecordRaw[]
   addRouters: AppRouteRecordRaw[]
   isAddRouters: boolean
@@ -27,7 +21,7 @@ export const usePermissionStore = defineStore('permission', {
       return this.routers
     },
     getAddRouters(): AppRouteRecordRaw[] {
-      return flatMultiLevelRoutes(cloneDeep(this.addRouters))
+      return this.addRouters
     },
     getIsAddRouters(): boolean {
       return this.isAddRouters
@@ -37,60 +31,29 @@ export const usePermissionStore = defineStore('permission', {
     }
   },
   actions: {
-    generateRoutes(
-      type: 'server' | 'frontEnd' | 'static',
-      routers?: AppCustomRouteRecordRaw[] | string[]
-    ): Promise<unknown> {
-      return new Promise<void>((resolve) => {
-        let routerMap: AppRouteRecordRaw[] = []
-        if (type === 'server') {
-          // 模拟后端过滤菜单
-          routerMap = generateRoutesByServer(routers as AppCustomRouteRecordRaw[])
-        } else if (type === 'frontEnd') {
-          // 模拟前端过滤菜单
-          routerMap = generateRoutesByFrontEnd(cloneDeep(asyncRouterMap), routers as string[])
-        } else {
-          // 直接读取静态路由表
-          routerMap = cloneDeep(asyncRouterMap)
-        }
-        // 动态路由，404一定要放到最后面
-        this.addRouters = routerMap.concat([
-          {
-            path: '/:path(.*)*',
-            redirect: '/404',
-            name: '404Page',
-            meta: {
-              hidden: true,
-              breadcrumb: false
-            }
-          }
-        ])
-        // 渲染菜单的所有路由
-        this.routers = cloneDeep(constantRouterMap).concat(routerMap)
-        resolve()
+    generateRoutes(type?: string): Promise<AppRouteRecordRaw[]> {
+      return new Promise((resolve) => {
+        console.log('Generating routes with type:', type)
+        const accessedRouters = asyncRouterMap
+        console.log('Accessed routers:', accessedRouters)
+        this.setRouters(constantRouterMap.concat(accessedRouters))
+        this.setAddRouters(accessedRouters)
+        resolve(accessedRouters)
       })
     },
-    setIsAddRouters(state: boolean): void {
-      this.isAddRouters = state
+    setRouters(routers: AppRouteRecordRaw[]) {
+      this.routers = routers
     },
-    setMenuTabRouters(routers: AppRouteRecordRaw[]): void {
+    setAddRouters(routers: AppRouteRecordRaw[]) {
+      this.addRouters = routers
+    },
+    setIsAddRouters(isAddRouters: boolean) {
+      this.isAddRouters = isAddRouters
+    },
+    setMenuTabRouters(routers: AppRouteRecordRaw[]) {
       this.menuTabRouters = routers
     }
-  },
-  persist: [
-    {
-      pick: ['routers'],
-      storage: localStorage
-    },
-    {
-      pick: ['addRouters'],
-      storage: localStorage
-    },
-    {
-      pick: ['menuTabRouters'],
-      storage: localStorage
-    }
-  ]
+  }
 })
 
 export const usePermissionStoreWithOut = () => {

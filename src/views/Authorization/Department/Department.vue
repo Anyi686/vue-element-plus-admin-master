@@ -5,15 +5,8 @@ import { Dialog } from '@/components/Dialog'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElTag } from 'element-plus'
 import { Table } from '@/components/Table'
-import {
-  getDepartmentApi,
-  getDepartmentTableApi,
-  saveDepartmentApi,
-  deleteDepartmentApi
-} from '@/api/department'
-import type { DepartmentItem } from '@/api/department/types'
 import { useTable } from '@/hooks/web/useTable'
-import { ref, unref, reactive } from 'vue'
+import { ref, reactive, unref } from 'vue'
 import Write from './components/Write.vue'
 import Detail from './components/Detail.vue'
 import { CrudSchema, useCrudSchemas } from '@/hooks/web/useCrudSchemas'
@@ -23,20 +16,13 @@ const ids = ref<string[]>([])
 
 const { tableRegister, tableState, tableMethods } = useTable({
   fetchDataApi: async () => {
-    const { currentPage, pageSize } = tableState
-    const res = await getDepartmentTableApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize),
-      ...unref(searchParams)
-    })
     return {
-      list: res.data.list,
-      total: res.data.total
+      list: [],
+      total: 0
     }
   },
   fetchDelApi: async () => {
-    const res = await deleteDepartmentApi(unref(ids))
-    return !!res
+    return true
   }
 })
 const { loading, dataList, total, currentPage, pageSize } = tableState
@@ -99,8 +85,7 @@ const crudSchemas = reactive<CrudSchema[]>([
         }
       },
       optionApi: async () => {
-        const res = await getDepartmentApi()
-        return res.data.list
+        return []
       }
     },
     detail: {
@@ -235,7 +220,7 @@ const { allSchemas } = useCrudSchemas(crudSchemas)
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 
-const currentRow = ref<DepartmentItem | null>(null)
+const currentRow = ref<any | null>(null)
 const actionType = ref('')
 
 const AddAction = () => {
@@ -247,18 +232,16 @@ const AddAction = () => {
 
 const delLoading = ref(false)
 
-const delData = async (row: DepartmentItem | null) => {
+const delData = async (row: any | null) => {
   const elTableExpose = await getElTableExpose()
-  ids.value = row
-    ? [row.id]
-    : elTableExpose?.getSelectionRows().map((v: DepartmentItem) => v.id) || []
+  ids.value = row ? [row.id] : elTableExpose?.getSelectionRows().map((v: any) => v.id) || []
   delLoading.value = true
-  await delList(unref(ids).length).finally(() => {
+  await delList(ids.value.length).finally(() => {
     delLoading.value = false
   })
 }
 
-const action = (row: DepartmentItem, type: string) => {
+const action = (row: any, type: string) => {
   dialogTitle.value = t(type === 'edit' ? 'exampleDemo.edit' : 'exampleDemo.detail')
   actionType.value = type
   currentRow.value = row
@@ -274,15 +257,16 @@ const save = async () => {
   const formData = await write?.submit()
   if (formData) {
     saveLoading.value = true
-    const res = await saveDepartmentApi(formData)
-      .catch(() => {})
-      .finally(() => {
-        saveLoading.value = false
-      })
-    if (res) {
+    try {
+      // const res = await saveDepartmentApi(formData)
+      // if (res) {
+      //   dialogVisible.value = false
+      //   getList()
+      // }
       dialogVisible.value = false
-      currentPage.value = 1
       getList()
+    } finally {
+      saveLoading.value = false
     }
   }
 }
@@ -291,14 +275,12 @@ const save = async () => {
 <template>
   <ContentWrap>
     <Search :schema="allSchemas.searchSchema" @search="setSearchParams" @reset="setSearchParams" />
-
     <div class="mb-10px">
       <BaseButton type="primary" @click="AddAction">{{ t('exampleDemo.add') }}</BaseButton>
       <BaseButton :loading="delLoading" type="danger" @click="delData(null)">
         {{ t('exampleDemo.del') }}
       </BaseButton>
     </div>
-
     <Table
       v-model:pageSize="pageSize"
       v-model:currentPage="currentPage"

@@ -1,13 +1,11 @@
-<script setup lang="tsx">
+<script setup lang="ts">
 import { Form, FormSchema } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
-import { PropType, reactive, watch, ref, unref, nextTick } from 'vue'
+import { PropType, reactive, watch, ref, unref } from 'vue'
 import { useValidator } from '@/hooks/web/useValidator'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElTree, ElCheckboxGroup, ElCheckbox } from 'element-plus'
-import { getMenuListApi } from '@/api/menu'
-import { filter, eachTree } from '@/utils/tree'
-import { findIndex } from '@/utils'
+import { filter } from '@/utils/tree'
 
 const { t } = useI18n()
 
@@ -20,7 +18,7 @@ const props = defineProps({
   }
 })
 
-const treeRef = ref<typeof ElTree>()
+const treeRef = ref<InstanceType<typeof ElTree>>()
 
 const formSchema = ref<FormSchema[]>([
   {
@@ -50,97 +48,24 @@ const formSchema = ref<FormSchema[]>([
     label: t('role.menu'),
     colProps: {
       span: 24
-    },
-    formItemProps: {
-      slots: {
-        default: () => {
-          return (
-            <>
-              <div class="flex w-full">
-                <div class="flex-1">
-                  <ElTree
-                    ref={treeRef}
-                    show-checkbox
-                    node-key="id"
-                    highlight-current
-                    check-strictly
-                    expand-on-click-node={false}
-                    data={treeData.value}
-                    onNode-click={nodeClick}
-                  >
-                    {{
-                      default: (data) => {
-                        return <span>{data.data.meta.title}</span>
-                      }
-                    }}
-                  </ElTree>
-                </div>
-                <div class="flex-1">
-                  {unref(currentTreeData) && unref(currentTreeData)?.permissionList ? (
-                    <ElCheckboxGroup v-model={unref(currentTreeData).meta.permission}>
-                      {unref(currentTreeData)?.permissionList.map((v: any) => {
-                        return <ElCheckbox label={v.value}>{v.label}</ElCheckbox>
-                      })}
-                    </ElCheckboxGroup>
-                  ) : null}
-                </div>
-              </div>
-            </>
-          )
-        }
-      }
     }
   }
 ])
 
-const currentTreeData = ref()
+const currentTreeData = ref<any>(null)
 const nodeClick = (treeData: any) => {
   currentTreeData.value = treeData
 }
 
 const rules = reactive({
   roleName: [required()],
-  role: [required()],
   status: [required()]
 })
 
 const { formRegister, formMethods } = useForm()
 const { setValues, getFormData, getElFormExpose } = formMethods
 
-const treeData = ref([])
-const getMenuList = async () => {
-  const res = await getMenuListApi()
-  if (res) {
-    treeData.value = res.data.list
-    if (!props.currentRow) return
-    await nextTick()
-    const checked: any[] = []
-    eachTree(props.currentRow.menu, (v) => {
-      checked.push({
-        id: v.id,
-        permission: v.meta?.permission || []
-      })
-    })
-    eachTree(treeData.value, (v) => {
-      const index = findIndex(checked, (item) => {
-        return item.id === v.id
-      })
-      if (index > -1) {
-        const meta = { ...(v.meta || {}) }
-        meta.permission = checked[index].permission
-        v.meta = meta
-      }
-    })
-    for (const item of checked) {
-      unref(treeRef)?.setChecked(item.id, true, false)
-    }
-    // unref(treeRef)?.setCheckedKeys(
-    //   checked.map((v) => v.id),
-    //   false
-    // )
-  }
-}
-getMenuList()
+const treeData = ref<any[]>([])
 
 const submit = async () => {
   const elForm = await getElFormExpose()
@@ -162,8 +87,15 @@ const submit = async () => {
 watch(
   () => props.currentRow,
   (currentRow) => {
-    if (!currentRow) return
+    if (!currentRow) {
+      // Clear checkboxes on create
+      unref(treeRef)?.setCheckedKeys([])
+      return
+    }
     setValues(currentRow)
+
+    const checkedKeys = (currentRow.menu || []).map((v: any) => v.id)
+    unref(treeRef)?.setCheckedKeys(checkedKeys)
   },
   {
     deep: true,
@@ -177,5 +109,36 @@ defineExpose({
 </script>
 
 <template>
-  <Form :rules="rules" @register="formRegister" :schema="formSchema" />
+  <Form :rules="rules" @register="formRegister" :schema="formSchema">
+    <template #menu>
+      <div class="flex w-full">
+        <div class="flex-1">
+          <ElTree
+            ref="treeRef"
+            show-checkbox
+            node-key="id"
+            highlight-current
+            :check-strictly="true"
+            :expand-on-click-node="false"
+            :data="treeData"
+            @node-click="nodeClick"
+          >
+            <template #default="{ data }">
+              <span>{{ data.meta.title }}</span>
+            </template>
+          </ElTree>
+        </div>
+        <div class="flex-1">
+          <ElCheckboxGroup
+            v-if="currentTreeData && currentTreeData.permissionList"
+            v-model="currentTreeData.meta.permission"
+          >
+            <ElCheckbox v-for="v in currentTreeData.permissionList" :key="v.value" :label="v.value">
+              {{ v.label }}
+            </ElCheckbox>
+          </ElCheckboxGroup>
+        </div>
+      </div>
+    </template>
+  </Form>
 </template>

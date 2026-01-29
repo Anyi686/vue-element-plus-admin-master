@@ -7,20 +7,49 @@ import UploadAvatar from './components/UploadAvatar.vue'
 import { Dialog } from '@/components/Dialog'
 import EditInfo from './components/EditInfo.vue'
 import EditPassword from './components/EditPassword.vue'
+import { useUserStore } from '@/store/modules/user'
+import { getUserInfoApi } from '@/api/login'
 
-const userInfo = ref()
+const userStore = useUserStore()
+
+// 角色映射
+const roleMap: Record<string, string> = {
+  ADMIN: '超级管理员',
+  ENTERPRISE_ADMIN: '企业管理员',
+  USER: '普通用户'
+}
+
+const userInfo = ref<any>({})
 const fetchDetailUserApi = async () => {
-  // 这里可以调用接口获取用户信息
-  const data = {
-    id: 1,
-    username: 'admin',
-    realName: 'admin',
-    phoneNumber: '18888888888',
-    email: '502431556@qq.com',
-    avatarUrl: '',
-    roleList: ['超级管理员']
+  try {
+    const res = await getUserInfoApi()
+    if (res.code === 200 && res.data) {
+      const data = res.data as any
+      userInfo.value = {
+        id: data.userId,
+        username: data.account,
+        realName: data.nick || data.account,
+        phoneNumber: data.phone || '-',
+        email: data.email || '-',
+        avatarUrl: data.logo || '',
+        roleList: data.role ? [roleMap[data.role] || data.role] : []
+      }
+    }
+  } catch (error) {
+    // 如果接口失败，使用 store 中的数据
+    const storeInfo = userStore.getUserInfo
+    if (storeInfo) {
+      userInfo.value = {
+        id: storeInfo.roleId,
+        username: storeInfo.account,
+        realName: storeInfo.nick || storeInfo.username || storeInfo.account,
+        phoneNumber: '-',
+        email: '-',
+        avatarUrl: storeInfo.avatar || '',
+        roleList: storeInfo.role ? [roleMap[storeInfo.role] || storeInfo.role] : []
+      }
+    }
   }
-  userInfo.value = data
 }
 fetchDetailUserApi()
 
