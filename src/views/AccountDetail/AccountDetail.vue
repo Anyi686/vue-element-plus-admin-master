@@ -1,35 +1,79 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ElTable, ElTableColumn, ElButton, ElPagination } from 'element-plus'
+import { ref, onMounted } from 'vue'
+import { ElTable, ElTableColumn, ElButton, ElPagination, ElMessage } from 'element-plus'
 import { Icon } from '@/components/Icon'
 import { useI18n } from '@/hooks/web/useI18n'
+import { getBillDetailListApi } from '@/api/bill'
+import type { BillDetailType } from '@/api/bill/types'
 
 const { t } = useI18n()
 
+// 加载状态
+const loading = ref(false)
+
 // 账户概览数据
 const accountSummary = ref({
-  totalConsumption: 1273,
-  currentBalance: 3985
+  totalConsumption: 0,
+  currentBalance: 0
 })
 
 // 账单明细数据
-const billList = ref([
-  { id: 1, patientName: '张三', date: '2025年01月09日', consumption: 2.5, remaining: 2981 },
-  { id: 2, patientName: '李四', date: '2025年01月08日', consumption: 3.2, remaining: 2983.5 },
-  { id: 3, patientName: '王五', date: '2025年01月08日', consumption: 1.8, remaining: 2986.7 },
-  { id: 4, patientName: '赵六', date: '2025年01月07日', consumption: 4.5, remaining: 2988.5 },
-  { id: 5, patientName: '钱七', date: '2025年01月07日', consumption: 2.1, remaining: 2993 },
-  { id: 6, patientName: '孙八', date: '2025年01月06日', consumption: 3.8, remaining: 2995.1 },
-  { id: 7, patientName: '周九', date: '2025年01月06日', consumption: 2.9, remaining: 2998.9 },
-  { id: 8, patientName: '吴十', date: '2025年01月05日', consumption: 1.5, remaining: 3001.8 }
-])
+const billList = ref<BillDetailType[]>([])
 
 // 分页数据
 const pagination = ref({
   currentPage: 1,
   pageSize: 10,
-  total: 50
+  total: 0
 })
+
+// 格式化时间显示
+const formatDateTime = (dateString: string) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString.replace(/-/g, '/'))
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${year}年${month}月${day}日 ${hours}:${minutes}`
+}
+
+// 加载账单明细数据
+const loadBillDetails = async () => {
+  loading.value = true
+  try {
+    const res = await getBillDetailListApi({
+      page: pagination.value.currentPage,
+      size: pagination.value.pageSize
+    })
+    if (res.code === 200) {
+      billList.value = res.data.list || []
+      pagination.value.total = res.data.total || 0
+
+      // 计算总消费和当前余额
+      if (billList.value.length > 0) {
+        // 总消费 = 所有记录的 minutes 之和
+        accountSummary.value.totalConsumption = billList.value.reduce(
+          (sum, item) => sum + (item.minutes || 0),
+          0
+        )
+        // 当前余额 = 最后一条记录的 rest（取绝对值，因为 rest 可能是负数）
+        const lastRest = billList.value[billList.value.length - 1]?.rest
+        if (lastRest) {
+          accountSummary.value.currentBalance = Math.abs(parseFloat(lastRest) || 0)
+        }
+      }
+    } else {
+      ElMessage.error('获取账单明细失败')
+    }
+  } catch (error) {
+    console.error('获取账单明细失败:', error)
+    ElMessage.error('获取账单明细失败，请重试')
+  } finally {
+    loading.value = false
+  }
+}
 
 // 表格行样式
 const tableRowClassName = ({ rowIndex }: { rowIndex: number }) => {
@@ -44,12 +88,19 @@ const handleRecharge = () => {
 // 分页变化
 const handlePageChange = (page: number) => {
   pagination.value.currentPage = page
+  loadBillDetails()
 }
 
 const handleSizeChange = (size: number) => {
   pagination.value.pageSize = size
   pagination.value.currentPage = 1
+  loadBillDetails()
 }
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadBillDetails()
+})
 </script>
 
 <template>
@@ -107,46 +158,54 @@ const handleSizeChange = (size: number) => {
 
       <!-- 表格 -->
       <ElTable
+        v-loading="loading"
         :data="billList"
         style="width: 100%"
         class="flex-1 custom-table"
         :row-class-name="tableRowClassName"
       >
         <ElTableColumn
-          prop="patientName"
+          prop="name"
           :label="t('accountDetail.patientName')"
           min-width="180"
           align="center"
         >
           <template #default="{ row }">
-            <span class="font-500 text-gray-800">{{ row.patientName }}</span>
-          </template>
-        </ElTableColumn>
-        <ElTableColumn prop="date" :label="t('accountDetail.date')" min-width="180" align="center">
-          <template #default="{ row }">
-            <span class="text-gray-600">{{ row.date }}</span>
+            <span class="font-500 text-gray-800">{{ row.name || '-' }}</span>
           </template>
         </ElTableColumn>
         <ElTableColumn
-          prop="consumption"
+          prop="createTime"
+          :label="t('accountDetail.date')"
+          min-width="180"
+          align="center"
+        >
+          <template #default="{ row }">
+            <span class="text-gray-600">{{ formatDateTime(row.createTime) }}</span>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn
+          prop="minutes"
           :label="t('accountDetail.consumption')"
           min-width="150"
           align="center"
         >
           <template #default="{ row }">
             <span class="text-orange-500 font-500"
-              >-{{ row.consumption }}{{ t('common.minutes') }}</span
+              >-{{ row.minutes || 0 }}{{ t('common.minutes') }}</span
             >
           </template>
         </ElTableColumn>
         <ElTableColumn
-          prop="remaining"
+          prop="rest"
           :label="t('accountDetail.remaining')"
           min-width="150"
           align="center"
         >
           <template #default="{ row }">
-            <span class="text-blue-600 font-500">{{ row.remaining }}{{ t('common.minutes') }}</span>
+            <span class="text-blue-600 font-500"
+              >{{ Math.abs(parseFloat(row.rest) || 0) }}{{ t('common.minutes') }}</span
+            >
           </template>
         </ElTableColumn>
       </ElTable>
