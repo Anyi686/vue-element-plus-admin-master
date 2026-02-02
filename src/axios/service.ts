@@ -35,11 +35,27 @@ axiosInstance.interceptors.response.use(
   },
   (error: AxiosError) => {
     console.log('err： ' + error) // for debug
-    // 处理401状态码，token过期需要重新登录
+    // 处理HTTP 401状态码，token过期需要重新登录
     if (error.response?.status === 401) {
-      ElMessage.error('登录已过期，请重新登录')
-      const userStore = useUserStoreWithOut()
-      userStore.logout()
+      // 检查响应数据中是否包含 token 过期信息
+      const responseData = error.response?.data as any
+      const message = responseData?.message || 'Token expired!'
+
+      if (
+        message.includes('Token expired') ||
+        message.includes('token expired') ||
+        message === 'Token expired!' ||
+        message.toLowerCase().includes('token expired') ||
+        responseData?.code === 401
+      ) {
+        ElMessage.error('登录已过期，请重新登录')
+        const userStore = useUserStoreWithOut()
+        userStore.logout()
+      } else {
+        ElMessage.error(message || '登录已过期，请重新登录')
+        const userStore = useUserStoreWithOut()
+        userStore.logout()
+      }
       return Promise.reject(error)
     }
     ElMessage.error(error.message)
