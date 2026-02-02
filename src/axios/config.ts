@@ -42,10 +42,31 @@ const defaultResponseInterceptors = (response: AxiosResponse) => {
   } else if (response.data.code === SUCCESS_CODE || response.status === 200) {
     return response.data
   } else {
-    ElMessage.error(response?.data?.message)
+    // 处理 token 过期的情况
     if (response?.data?.code === 401) {
-      const userStore = useUserStoreWithOut()
-      userStore.logout()
+      const message = response?.data?.message || 'Token expired!'
+      // 如果是 token 过期，显示提示并登出
+      if (
+        message.includes('Token expired') ||
+        message.includes('token expired') ||
+        message === 'Token expired!' ||
+        message.toLowerCase().includes('token expired')
+      ) {
+        ElMessage.error('登录已过期，请重新登录')
+        const userStore = useUserStoreWithOut()
+        userStore.logout()
+      } else {
+        // 其他 401 错误也处理登出
+        ElMessage.error(message || '登录已过期，请重新登录')
+        const userStore = useUserStoreWithOut()
+        userStore.logout()
+      }
+      // 抛出错误，阻止后续处理
+      return Promise.reject(response.data)
+    } else {
+      // 其他错误正常显示
+      ElMessage.error(response?.data?.message)
+      return Promise.reject(response.data)
     }
   }
 }
